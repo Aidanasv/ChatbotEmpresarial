@@ -1,0 +1,26 @@
+@use './variables' as *;
+
+body {
+  font-family: $font-family-main !important; 
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a, button {
+  transition: $transition-base;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba($brand-primary, 0.2);
+  border-radius: 10px;
+  &:hover {
+    background: $brand-primary;
+  }
+}
+
+.line-height-1 {
+  line-height: 1;
+}
