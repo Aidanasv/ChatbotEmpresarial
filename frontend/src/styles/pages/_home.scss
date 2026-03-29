@@ -1,0 +1,92 @@
+@use '../base/variables' as *;
+
+.hero-container {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+
+    .hero-chip {
+        color: $brand-primary;
+    }
+
+    .hero-title {
+        line-height: 1.2;
+        font-weight: $font-weight-black;
+
+        .brand-highlight {
+            color: $brand-primary;
+        }
+    }
+
+    .hero-description {
+        line-height: 1.6;
+    }
+
+    .hero-illustration-box {
+        background-color: $bg-dark;
+
+        .robot-icon {
+            color: rgba(255, 255, 255, 0.1);
+        }
+
+        .illustration-text {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
+        }
+    }
+}
+
+.features-section {
+
+    .icon-box {
+        background-color: rgba($brand-primary, 0.1) !important;
+
+        .feature-icon {
+            opacity: 1 !important;
+            color: $brand-primary !important;
+        }
+    }
+
+    .v-card.hover-card {
+        transition: $transition-base;
+        border-radius: $border-radius-lg;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba($brand-primary, 0.1) !important;
+            border-color: rgba($brand-primary, 0.2);
+        }
+    }
+}
+
+.line-height-medium {
+    line-height: 1.6;
+}
+
+.cta-container {
+    .cta-banner {
+        background-color: $brand-primary;
+        color: white;
+        transition: $transition-base;
+
+        .cta-title {
+            line-height: 1.2;
+        }
+
+        .cta-subtitle {
+            opacity: 0.9;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .cta-btn {
+            background-color: white;
+            color: $brand-primary;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.9);
+                transform: scale(1.02);
+            }
+        }
+    }
+}
