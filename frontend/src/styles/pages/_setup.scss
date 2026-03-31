@@ -1,0 +1,194 @@
+@use '../base/variables' as *;
+
+.setup-page-wrapper {
+  background-color: $bg-main;
+  min-height: 100vh;
+}
+
+.setup-container {
+  .setup-card {
+    max-width: 800px;
+    background-color: $bg-surface;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+  }
+
+  .border-top {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+//Navegación del stepper
+  .stepper-nav {
+    .step-pill {
+      background-color: rgba(var(--v-theme-on-surface), 0.04);
+      color: rgba(var(--v-theme-on-surface), 0.6);
+      transition: $transition-base;
+      height: 36px;
+      border-radius: 18px;
+
+      &.is-active {
+        background-color: $brand-primary;
+        color: white;
+      }
+    }
+
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background-color: rgba(var(--v-border-color), 0.1);
+      margin: 0 8px;
+      transition: $transition-base;
+
+      &.is-filled {
+        background-color: $brand-primary;
+      }
+    }
+  }
+
+// Formulario
+  .form-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(var(--v-theme-on-surface), 0.8);
+    display: block;
+    margin-bottom: 6px;
+
+    .text-error {
+      color: rgb(var(--v-theme-error));
+    }
+  }
+
+  .setup-input {
+    .v-field {
+      border-radius: 12px;
+      background-color: $bg-main;
+      border: 1px solid transparent;
+      transition: $transition-base;
+
+      &:hover {
+        background-color: $bg-hover;
+      }
+
+      &.v-field--focused {
+        background-color: $bg-surface;
+        border-color: rgba($brand-primary, 0.4);
+        box-shadow: 0 0 0 4px rgba($brand-primary, 0.1);
+      }
+    }
+
+    input,
+    textarea {
+      color: rgb(var(--v-theme-on-surface));
+    }
+  }
+
+  // Personalidad
+  .tone-card {
+    border: 1px solid rgba(var(--v-border-color), 0.1);
+    background-color: transparent;
+    transition: $transition-base;
+    height: 100%;
+
+    .tone-radio {
+      margin-top: -2px;
+
+      .v-selection-control {
+        min-height: auto;
+      }
+    }
+
+    &:hover:not(.is-selected) {
+      background-color: rgba(var(--v-theme-on-surface), 0.02);
+      border-color: rgba(var(--v-border-color), 0.2);
+    }
+
+    &.is-selected {
+      background-color: rgba($brand-primary, 0.05);
+      border-color: rgba($brand-primary, 0.5);
+
+      .tone-title {
+        color: $brand-primary;
+      }
+    }
+  }
+
+  // Apariencia
+  .gap-3 {
+    gap: 12px;
+  }
+
+  .color-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 3px solid transparent;
+
+    &:hover {
+      transform: scale(1.1);
+    }
+
+    &.is-selected {
+      border-color: rgba(var(--v-theme-on-surface), 0.15);
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .appearance-card {
+    border: 1px solid rgba(var(--v-border-color), 0.1);
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+  }
+
+  .v-btn-toggle.position-selector {
+    height: 52px;
+    border-radius: 12px;
+    border: 1px solid rgba(var(--v-border-color), 0.1);
+    background-color: transparent;
+
+    .v-btn {
+      border: none;
+      font-weight: 500;
+      color: rgba(var(--v-theme-on-surface), 0.6);
+
+      &.v-btn--active {
+        background-color: rgba(var(--v-theme-on-surface), 0.05);
+        color: rgb(var(--v-theme-on-surface));
+
+        .v-btn__content {
+          font-weight: 700;
+        }
+      }
+    }
+  }
+
+  .preview-box {
+    background-color: rgba(var(--v-theme-on-surface), 0.03);
+    border: 1px dashed rgba(var(--v-border-color), 0.2);
+    min-height: 150px;
+  }
+
+  // Conocimiento
+  .upload-zone {
+    border: 2px dashed rgba(var(--v-border-color), 0.2);
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+    transition: $transition-base;
+
+    &:hover {
+      border-color: rgba($brand-primary, 0.5);
+      background-color: rgba($brand-primary, 0.02);
+      
+      .v-icon.upload-icon {
+          color: $brand-primary;
+      }
+    }
+  }
+
+  .knowledge-card {
+    border: 1px solid rgba(var(--v-border-color), 0.1);
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+  }
+}
