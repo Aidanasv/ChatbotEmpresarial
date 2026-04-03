@@ -1,0 +1,52 @@
+@use '../base/variables' as *;
+
+.dashboard-layout.v-layout {
+  .v-navigation-drawer {
+    border-right: 1px solid $border-color;
+  }
+
+  .v-app-bar.v-toolbar {
+    border-bottom: 1px solid $border-color;
+  }
+
+  .dash-card.v-card {
+    border-radius: 16px;
+    border: 1px solid $border-color;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+    transition: $transition-base;
+
+    &:hover {
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  .kpi-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba($brand-primary, 0.08);
+    
+    .v-icon {
+      color: $brand-primary;
+      opacity: 1;
+    }
+  }
+
+  .v-list-item--active.v-list-item {
+    background-color: rgba($brand-primary, 0.08);
+    color: $brand-primary;
+    font-weight: $font-weight-bold;
+
+    .v-icon {
+      color: $brand-primary;
+      opacity: 1;
+    }
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid $border-color;
+  }
+}
