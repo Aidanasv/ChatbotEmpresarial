@@ -14,10 +14,34 @@
         variant="solo" flat class="setup-input mb-4" hide-details
       ></v-text-field>
 
+      <label class="form-label">Razón social</label>
+      <v-text-field
+        :model-value="modelValue.legalName"
+        @update:model-value="update('legalName', $event)"
+        placeholder="Acme Corporation S.A."
+        variant="solo" flat class="setup-input mb-4" hide-details
+      ></v-text-field>
+
+      <label class="form-label">CIF / NIF</label>
+      <v-text-field
+        :model-value="modelValue.cif"
+        @update:model-value="update('cif', $event)"
+        placeholder="B12345678"
+        variant="solo" flat class="setup-input mb-4" hide-details
+      ></v-text-field>
+
+      <label class="form-label">Correo electrónico de contacto</label>
+      <v-text-field
+        :model-value="modelValue.email"
+        @update:model-value="update('email', $event)"
+        placeholder="contacto@tuempresa.com"
+        variant="solo" flat class="setup-input mb-4" hide-details
+      ></v-text-field>
+
       <label class="form-label">Industria / Sector</label>
       <v-text-field
-        :model-value="modelValue.industry"
-        @update:model-value="update('industry', $event)"
+        :model-value="modelValue.sector"
+        @update:model-value="update('sector', $event)"
         placeholder="Ej: Tecnología, Salud, E-commerce..."
         variant="solo" flat class="setup-input mb-4" hide-details
       ></v-text-field>
@@ -45,7 +69,10 @@
 const props = defineProps<{
   modelValue: {
     companyName: string;
-    industry: string;
+    legalName: string;
+    cif: string;
+    email: string;
+    sector: string;
     website: string;
     description: string;
   }

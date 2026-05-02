@@ -55,8 +55,6 @@ const props = defineProps<{
     files: File[];
     faqs: string;
     additionalInfo: string;
-    humanEscalation: boolean;
-    supportEmail: string;
   }
 }>()
 

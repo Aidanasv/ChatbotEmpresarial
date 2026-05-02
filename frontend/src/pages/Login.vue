@@ -12,12 +12,12 @@
       <v-card elevation="2" class="auth-card pa-8 rounded-xl mx-auto">
 
         <div class="auth-toggle d-flex mb-8 pa-1 rounded-lg">
-          <v-btn flat :class="{ 'active-toggle': isLogin }"
-            class="flex-grow-1 rounded-md text-none transition-swing" @click="isLogin = true">
+          <v-btn flat :class="{ 'active-toggle': isLogin }" class="flex-grow-1 rounded-md text-none transition-swing"
+            @click="isLogin = true">
             Iniciar sesión
           </v-btn>
-          <v-btn flat :class="{ 'active-toggle': !isLogin }"
-            class="flex-grow-1 rounded-md text-none transition-swing" @click="isLogin = false">
+          <v-btn flat :class="{ 'active-toggle': !isLogin }" class="flex-grow-1 rounded-md text-none transition-swing"
+            @click="isLogin = false">
             Registrarse
           </v-btn>
         </div>
@@ -26,24 +26,22 @@
           <v-expand-transition>
             <div v-if="!isLogin" class="text-left mb-4">
               <label class="auth-label">Nombre completo</label>
-              <v-text-field v-model="name" placeholder="Juan Pérez" variant="solo" flat
-                bg-color="grey-lighten-4" prepend-inner-icon="mdi-account-outline" hide-details
-                class="rounded-lg mt-1"></v-text-field>
+              <v-text-field v-model="name" placeholder="Juan Pérez" variant="solo" flat bg-color="grey-lighten-4"
+                prepend-inner-icon="mdi-account-outline" hide-details class="rounded-lg mt-1"></v-text-field>
             </div>
           </v-expand-transition>
 
           <div class="text-left mb-4">
             <label class="auth-label">Correo electrónico</label>
-            <v-text-field v-model="email" placeholder="tu@empresa.com" variant="solo" flat
-              bg-color="grey-lighten-4" prepend-inner-icon="mdi-email-outline" hide-details
-              class="rounded-lg mt-1"></v-text-field>
+            <v-text-field v-model="email" placeholder="tu@empresa.com" variant="solo" flat bg-color="grey-lighten-4"
+              prepend-inner-icon="mdi-email-outline" hide-details class="rounded-lg mt-1"></v-text-field>
           </div>
 
           <div class="text-left mb-8">
             <label class="auth-label">Contraseña</label>
-            <v-text-field v-model="password" :placeholder="isLogin ? '••••••••' : 'Mínimo 8 caracteres'"
-              type="password" variant="solo" flat bg-color="grey-lighten-4"
-              prepend-inner-icon="mdi-lock-outline" hide-details class="rounded-lg mt-1"></v-text-field>
+            <v-text-field v-model="password" :placeholder="isLogin ? '••••••••' : 'Mínimo 8 caracteres'" type="password"
+              variant="solo" flat bg-color="grey-lighten-4" prepend-inner-icon="mdi-lock-outline" hide-details
+              class="rounded-lg mt-1"></v-text-field>
           </div>
 
           <v-btn color="primary" size="x-large" block rounded="lg" type="submit"
@@ -63,8 +61,12 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/useAuthStore'
+
 
 const route = useRoute()
+const router = useRouter()
 
 const isLogin = ref(true)
 const name = ref('')
@@ -87,14 +89,19 @@ watch(() => route.query.mode, () => {
   updateModeFromQuery()
 })
 
-const handleSubmit = () => {
-  console.log('Formulario enviado:', {
-    accion: isLogin.value ? 'Login' : 'Registro',
-    datos: {
-      name: name.value,
-      email: email.value,
-      password: password.value
+const handleSubmit = async () => {
+  if (isLogin.value) {
+    await useAuthStore().login({ email: email.value, password: password.value })
+    if (useAuthStore().isAuthenticated && useAuthStore().companyId) {
+      router.push({ path: '/dashboard' })
+    }else if (useAuthStore().isAuthenticated) {
+      router.push({ path: '/setup' })
     }
-  })
+  } else {
+    await useAuthStore().register({ userName: name.value, email: email.value, password: password.value })
+    if (useAuthStore().isAuthenticated) {
+      router.push({ path: '/setup' })
+    }
+  }
 }
 </script>

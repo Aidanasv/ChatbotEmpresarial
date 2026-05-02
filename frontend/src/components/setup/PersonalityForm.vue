@@ -8,8 +8,8 @@
     <v-form>
       <label class="form-label">Nombre del chatbot <span class="text-error">*</span></label>
       <v-text-field
-        :model-value="modelValue.botName"
-        @update:model-value="update('botName', $event)"
+        :model-value="modelValue.chatbotName"
+        @update:model-value="update('chatbotName', $event)"
         placeholder="Ej: Asistente Acme, Luna, Max..."
         variant="solo" flat class="setup-input mb-6" hide-details
       ></v-text-field>
@@ -19,11 +19,11 @@
         <v-col cols="12" sm="6" v-for="option in toneOptions" :key="option.value">
           <v-card
             flat
-            :class="['tone-card cursor-pointer pa-4 rounded-xl d-flex align-start', { 'is-selected': modelValue.tone === option.value }]"
-            @click="update('tone', option.value)"
+            :class="['tone-card cursor-pointer pa-4 rounded-xl d-flex align-start', { 'is-selected': modelValue.chatbotTone === option.value }]"
+            @click="update('chatbotTone', option.value)"
           >
             <v-radio
-              :model-value="modelValue.tone === option.value"
+              :model-value="modelValue.chatbotTone === option.value"
               color="primary"
               class="mr-2 tone-radio"
               hide-details
@@ -40,16 +40,16 @@
 
       <label class="form-label">Mensaje de bienvenida</label>
       <v-textarea
-        :model-value="modelValue.welcomeMsg"
-        @update:model-value="update('welcomeMsg', $event)"
+        :model-value="modelValue.greetingMessage"
+        @update:model-value="update('greetingMessage', $event)"
         placeholder="¡Hola! 👋 Soy el asistente de Acme. ¿En qué puedo ayudarte hoy?"
         variant="solo" flat class="setup-input mb-6" rows="2" hide-details
       ></v-textarea>
 
       <label class="form-label">Respuesta cuando no sabe algo</label>
       <v-textarea
-        :model-value="modelValue.fallbackMsg"
-        @update:model-value="update('fallbackMsg', $event)"
+        :model-value="modelValue.fallbackMessage"
+        @update:model-value="update('fallbackMessage', $event)"
         placeholder="Lo siento, no tengo esa información. ¿Te gustaría hablar con un agente?"
         variant="solo" flat class="setup-input" rows="2" hide-details
       ></v-textarea>
@@ -60,10 +60,10 @@
 <script setup lang="ts">
 const props = defineProps<{
   modelValue: {
-    botName: string;
-    tone: string;
-    welcomeMsg: string;
-    fallbackMsg: string;
+    chatbotName: string,
+    chatbotTone: number,  
+    greetingMessage: string,
+    fallbackMessage: string
   }
 }>()
 
@@ -74,9 +74,9 @@ const update = (field: string, value: any) => {
 }
 
 const toneOptions = [
-  { value: 'formal', title: 'Formal', desc: 'Profesional y corporativo' },
-  { value: 'amigable', title: 'Amigable', desc: 'Cercano y conversacional' },
-  { value: 'tecnico', title: 'Técnico', desc: 'Preciso y detallado' },
-  { value: 'casual', title: 'Casual', desc: 'Relajado e informal' }
+  { value: 0, title: 'Formal', desc: 'Profesional y corporativo' },
+  { value: 1, title: 'Amigable', desc: 'Cercano y conversacional' },
+  { value: 2, title: 'Técnico', desc: 'Preciso y detallado' },
+  { value: 3, title: 'Casual', desc: 'Relajado e informal' }
 ]
 </script>
