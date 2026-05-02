@@ -27,8 +27,8 @@
             <div class="text-caption text-medium-emphasis">Imagen del bot en el chat</div>
           </div>
           <v-switch
-            :model-value="modelValue.showAvatar"
-            @update:model-value="update('showAvatar', $event)"
+            :model-value="modelValue.showChatbotAvatar"
+            @update:model-value="update('showChatbotAvatar', $event)"
             color="primary"
             hide-details
             inset
@@ -38,8 +38,8 @@
 
       <label class="form-label mb-3">Posición del widget</label>
       <v-btn-toggle
-        :model-value="modelValue.position"
-        @update:model-value="update('position', $event)"
+        :model-value="modelValue.widgetPosition ? 'right' : 'left'"
+        @update:model-value="update('widgetPosition', $event === 'right')"
         mandatory
         variant="outlined"
         class="w-100 position-selector"
@@ -50,7 +50,7 @@
       
       <div 
         class="mt-8 pa-6 rounded-xl preview-box d-flex flex-column transition-swing" 
-        :class="modelValue.position === 'left' ? 'align-start' : 'align-end'"
+        :class="modelValue.widgetPosition ? 'align-end' : 'align-start'"
       >
         <span class="text-caption text-medium-emphasis mb-4 w-100 text-center">Vista previa</span>
         <v-btn icon size="large" :color="modelValue.primaryColor" elevation="4">
@@ -65,8 +65,8 @@
 const props = defineProps<{
   modelValue: {
     primaryColor: string;
-    showAvatar: boolean;
-    position: string;
+    showChatbotAvatar: boolean;
+    widgetPosition: boolean;
   }
 }>()
 
