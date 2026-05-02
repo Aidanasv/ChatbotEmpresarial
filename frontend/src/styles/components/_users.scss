@@ -1,0 +1,52 @@
+@use '../base/variables' as *;
+
+.users-container {
+  .gap-2 {
+    gap: 8px;
+  }
+
+  .gap-3 {
+    gap: 12px;
+  }
+
+  .gap-4 {
+    gap: 16px;
+  }
+
+  .max-w-sm {
+    max-width: 320px;
+    width: 100%;
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid $border-color;
+  }
+
+  .border-top {
+    border-top: 1px solid $border-color;
+  }
+
+  .dash-card.v-card {
+    overflow: hidden;
+  }
+
+  .users-table {
+    th {
+      background-color: rgba(0, 0, 0, 0.02);
+      border-bottom: 1px solid $border-color;
+      white-space: nowrap;
+    }
+
+    .user-row {
+      transition: background-color 0.2s ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.01);
+      }
+
+      td {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      }
+    }
+  }
+}

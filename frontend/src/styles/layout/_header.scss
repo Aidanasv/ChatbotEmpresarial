@@ -1,0 +1,21 @@
+@use '../base/variables' as *;
+
+.app-navbar {
+  border-bottom: 1px solid rgba(var(--v-border-color), 0.08) !important;
+
+  .navbar-logo-text {
+    color: $brand-primary;
+    letter-spacing: -0.5px;
+  }
+
+  .navbar-link {
+    text-transform: none;
+    letter-spacing: 0;
+    transition: $transition-base;
+    
+    &:hover {
+      color: $brand-primary;
+      background-color: rgba(var(--v-theme-primary), 0.05);
+    }
+  }
+}

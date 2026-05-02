@@ -1,0 +1,12 @@
+@use '../base/variables' as *;
+
+.app-footer {
+  border-top: 1px solid rgba(var(--v-border-color), 0.08);
+  
+  .footer-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(var(--v-theme-on-surface), 0.5);
+    letter-spacing: 0.2px;
+  }
+}
