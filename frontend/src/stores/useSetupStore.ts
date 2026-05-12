@@ -4,6 +4,7 @@ import axios from 'axios'
 
 export const useSetupStore = defineStore('setup', {
     state: (): SetUpState => ({
+        isLoading: false,
         step: 1,
         companySetup: {
             companyName: '',
@@ -49,11 +50,14 @@ export const useSetupStore = defineStore('setup', {
 
         async savePersonalitySetup(personalitySetup: PersonalitySetup) {
             try {
+                this.isLoading = true;
                 const response = await axios.post('http://localhost:5267/api/setup/personalization', personalitySetup,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
+                this.isLoading = false;
                 return response.data;
             } catch (error) {
+                this.isLoading = false;
                 console.error('Error saving personality setup:', error);
                 throw error;
             }
@@ -63,18 +67,56 @@ export const useSetupStore = defineStore('setup', {
             this.appearanceSetup = appearanceSetup;
         },
 
+        async saveAppearanceSetup(appearanceSetup: AppearanceSetup) {
+            try {
+                this.isLoading = true;
+                const response = await axios.post('http://localhost:5267/api/setup/appearance', appearanceSetup,
+                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                );
+                this.isLoading = false;
+                return response.data;
+            } catch (error) {
+                this.isLoading = false;
+                console.error('Error saving appearance setup:', error);
+                throw error;
+            }
+        },
+
         async saveInitialSetup() {
             try {
+                this.isLoading = true;
                 const response = await axios.post('http://localhost:5267/api/setup/setupInitial', {
                     companySetup: this.companySetup,
                     personalitySetup: this.personalitySetup,
                     appearanceSetup: this.appearanceSetup
                 }, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+                this.isLoading = false;
                 return response.data;
             } catch (error) {
+                this.isLoading = false;
                 console.error('Error saving initial setup:', error);
                 throw error;
             }
+        },
+
+        async getSetupData(companyId: number) {
+            try {
+                this.isLoading = true;
+                const response = await axios.get(`http://localhost:5267/api/setup/setup/${companyId}`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+                const { companySetup, personalitySetup, appearanceSetup } = response.data;
+                this.companySetup = companySetup;
+                this.personalitySetup = personalitySetup;
+                this.appearanceSetup = appearanceSetup;
+                this.isLoading = false;
+            } catch (error) {
+                this.isLoading = false;
+                console.error('Error fetching setup data:', error);
+                throw error;
+            }
         }
+
+
     }
 })

@@ -21,7 +21,7 @@
         <v-list-item to="/dashboard/knowledge" prepend-icon="mdi-book-open-variant" title="Conocimiento" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/personality" prepend-icon="mdi-account-voice" title="Personalidad" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/appearance" prepend-icon="mdi-palette-outline" title="Apariencia" rounded="lg" color="primary"></v-list-item>
-        <v-list-item to="/dashboard/settings" prepend-icon="mdi-cog-outline" title="Configuración" rounded="lg" color="primary"></v-list-item>
+        <v-list-item to="/dashboard/company" prepend-icon="mdi-cog-outline" title="Perfil" rounded="lg" color="primary"></v-list-item>
       </v-list>
 
       <template v-slot:append>

@@ -19,6 +19,41 @@ namespace backend.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = nameof(Role.Admin))]
+        [HttpGet("setup/{companyId}")]
+        public async Task<IActionResult> GetSetupData(int companyId)
+        {
+            var company = await _context.Companies
+                .Include(c => c.ChatbotSettings)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            var setupResponse = new SetupResponseDto
+            {
+                CompanySetup = new CompanySetupDto
+                {
+                    CompanyName = company.Name,
+                    LegalName = company.LegalName,
+                    Cif = company.CIF,
+                    Email = company.Email,
+                    Sector = company.Sector,
+                    Website = company.Website,
+                    Description = company.Description
+                },
+                PersonalitySetup = company.ChatbotSettings != null ? new PersonalitySetupDto
+                {
+                    ChatbotName = company.ChatbotSettings.ChatbotName,
+                    ChatbotTone = company.ChatbotSettings.ChatbotTone,
+                    GreetingMessage = company.ChatbotSettings.GreetingMessage,
+                    FallbackMessage = company.ChatbotSettings.FallbackMessage
+                } : new PersonalitySetupDto()
+            };
+
+            return Ok(setupResponse);
+        }
 
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpPost("setupInitial")]
@@ -52,8 +87,12 @@ namespace backend.Controllers
                     ChatbotName = setupData.PersonalitySetup.ChatbotName,
                     ChatbotTone = setupData.PersonalitySetup.ChatbotTone,
                     GreetingMessage = setupData.PersonalitySetup.GreetingMessage,
-                    FallbackMessage = setupData.PersonalitySetup.FallbackMessage
+                    FallbackMessage = setupData.PersonalitySetup.FallbackMessage,
+                    PrimaryColor = setupData.AppearanceSetup.PrimaryColor,
+                    ShowAvatar = setupData.AppearanceSetup.ShowChatbotAvatar,
+                    WidgetPosition = setupData.AppearanceSetup.WidgetPosition
                 }
+
             };
 
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -76,11 +115,13 @@ namespace backend.Controllers
             }
         }
 
+        // Endpoint para actualizar solo los datos de la empresa
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpPost("company")]
         public async Task<IActionResult> SaveCompanySetup(CompanySetupDto companySetup)
         {
             var userId = GetUserIdFromToken();
+            var companyId = GetCompanyIdFromToken();
             if (userId == null)
             {
                 return Unauthorized("Usuario no autenticado.");
@@ -91,30 +132,33 @@ namespace backend.Controllers
             {
                 return Unauthorized("Usuario no encontrado.");
             }
-
-            var subscription = await _context.Subscriptions.ToListAsync();
-            var company = new Company
+            else if (companyId == null || user.CompanyId == null)
             {
-                Name = companySetup.CompanyName,
-                LegalName = companySetup.LegalName,
-                CIF = companySetup.Cif,
-                Email = companySetup.Email,
-                Sector = companySetup.Sector,
-                Website = companySetup.Website,
-                Description = companySetup.Description,
-                SubscriptionId = subscription.FirstOrDefault()?.Id ?? 0
-            };
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+            else if (companyId != null && user.CompanyId != companyId)
+            {
+                return Forbid("El usuario no tiene permiso para editar esta empresa.");
+            }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
             try
             {
-                _context.Companies.Add(company);
+                company.Name = companySetup.CompanyName;
+                company.LegalName = companySetup.LegalName;
+                company.CIF = companySetup.Cif;
+                company.Email = companySetup.Email;
+                company.Sector = companySetup.Sector;
+                company.Website = companySetup.Website;
+                company.Description = companySetup.Description;
+                _context.Companies.Update(company);
                 await _context.SaveChangesAsync();
-
-                user.CompanyId = company.Id;
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
 
                 var companySetupResponseDto = new CompanySetupResponseDto
                 {
@@ -135,7 +179,6 @@ namespace backend.Controllers
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 return StatusCode(500, $"Error al guardar los datos de la empresa: {ex.Message}");
             }
         }
@@ -145,6 +188,7 @@ namespace backend.Controllers
         public async Task<IActionResult> SaveCompanyPersonalization(PersonalitySetupDto personalitySetup)
         {
             var userId = GetUserIdFromToken();
+            var companyId = GetCompanyIdFromToken();
             if (userId == null)
             {
                 return Unauthorized("Usuario no autenticado.");
@@ -155,22 +199,75 @@ namespace backend.Controllers
             {
                 return Unauthorized("Usuario no encontrado.");
             }
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == user.CompanyId);
+            else if (companyId == null || user.CompanyId == null)
+            {
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+            else if (companyId != null && user.CompanyId != companyId)
+            {
+                return Forbid("El usuario no tiene permiso para editar esta empresa.");
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.ChatbotSettings)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
             if (company == null)
             {
                 return NotFound("Empresa no encontrada.");
             }
 
-            company.ChatbotSettings = new ChatbotSettings
-            {
-                ChatbotName = personalitySetup.ChatbotName,
-                ChatbotTone = personalitySetup.ChatbotTone,
-                GreetingMessage = personalitySetup.GreetingMessage,
-                FallbackMessage = personalitySetup.FallbackMessage
-            };
-            _context.Companies.Update(company);
+            var chatbotSettings = company.ChatbotSettings;
+            chatbotSettings.ChatbotName = personalitySetup.ChatbotName;
+            chatbotSettings.ChatbotTone = personalitySetup.ChatbotTone;
+            chatbotSettings.GreetingMessage = personalitySetup.GreetingMessage;
+            chatbotSettings.FallbackMessage = personalitySetup.FallbackMessage;
+
+            _context.ChatbotSettings.Update(chatbotSettings);
             await _context.SaveChangesAsync();
             return Ok(personalitySetup);
+        }
+
+        [Authorize(Roles = nameof(Role.Admin))]
+        [HttpPost("appearance")]
+        public async Task<IActionResult> SaveCompanyAppearance(AppearanceSetupDto appearanceSetup)
+        {
+            var userId = GetUserIdFromToken();
+            var companyId = GetCompanyIdFromToken();
+            if (userId == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return Unauthorized("Usuario no encontrado.");
+            }
+            else if (companyId == null || user.CompanyId == null)
+            {
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+            else if (companyId != null && user.CompanyId != companyId)
+            {
+                return Forbid("El usuario no tiene permiso para editar esta empresa.");
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.ChatbotSettings)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            var chatbotSettings = company.ChatbotSettings;
+            chatbotSettings.PrimaryColor = appearanceSetup.PrimaryColor;
+            chatbotSettings.ShowAvatar = appearanceSetup.ShowChatbotAvatar;
+            chatbotSettings.WidgetPosition = appearanceSetup.WidgetPosition;
+
+            _context.ChatbotSettings.Update(chatbotSettings);
+            await _context.SaveChangesAsync();
+            return Ok(appearanceSetup);
         }
 
         private int? GetUserIdFromToken()
@@ -179,6 +276,16 @@ namespace backend.Controllers
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
             {
                 return userId;
+            }
+            return null;
+        }
+
+        private int? GetCompanyIdFromToken()
+        {
+            var companyIdClaim = User.FindFirst("companyId");
+            if (companyIdClaim != null && int.TryParse(companyIdClaim.Value, out int companyId))
+            {
+                return companyId;
             }
             return null;
         }

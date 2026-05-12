@@ -29,6 +29,7 @@ export interface AppearanceSetup {
 }
 
 export interface SetUpState {
+    isLoading: boolean;
     step: number;
     companySetup: CompanySetup;
     personalitySetup: PersonalitySetup;

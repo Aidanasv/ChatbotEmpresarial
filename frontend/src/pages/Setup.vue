@@ -72,6 +72,7 @@ const stepsList = [
   { text: 'Apariencia', icon: 'mdi-palette-outline' }
 ]
 const chatbotData = ref<SetUpState>({
+  isLoading: false,
   step: setupStore.step,
   companySetup: setupStore.companySetup,
   personalitySetup: setupStore.personalitySetup,

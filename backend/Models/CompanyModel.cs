@@ -16,7 +16,7 @@ namespace backend.Models
         public DateTime RenewalDate { get; set; } = DateTime.UtcNow.AddMonths(1);
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<User> Users { get; set; } = new List<User>();
-        public ChatbotSettings ChatbotSettings { get; set; } = new ChatbotSettings();
+        public ChatbotSettings? ChatbotSettings { get; set; }
 
     }
 }

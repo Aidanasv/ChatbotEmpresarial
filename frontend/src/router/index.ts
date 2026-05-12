@@ -9,6 +9,12 @@ import Panel from '@/components/dashboard/Panel.vue'
 import Conversations from '@/components/dashboard/Conversations.vue'
 import Analytics from '@/components/dashboard/Analytics.vue'
 import Users from '@/components/dashboard/Users.vue'
+import Personality from '@/components/dashboard/Personality.vue'
+import { useAuthStore } from '@/stores/useAuthStore'
+import { useSetupStore } from '@/stores/useSetupStore'
+import App from '@/App.vue'
+import Apperearance from '@/components/dashboard/Apperearance.vue'
+import Company from '@/components/dashboard/Company.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +38,14 @@ const router = createRouter({
       path: '/dashboard',
       component: DashboardView,
       redirect: '/dashboard/panel',
+      beforeEnter: async () => {
+        const authStore = useAuthStore()
+        if (!authStore.isAuthenticated) {
+          return '/login'
+        }
+        const setupStore = useSetupStore()
+        await setupStore.getSetupData(authStore.companyId)
+      },
       children: [
         {
           path: 'panel',
@@ -52,6 +66,21 @@ const router = createRouter({
           path: 'users',
           name: 'dashboard-users',
           component: Users
+        },
+        {
+          path: 'personality',
+          name: 'dashboard-personality',
+          component: Personality
+        },
+        {
+          path: 'appearance',
+          name: 'dashboard-appearance',
+          component: Apperearance
+        },
+        {
+          path: 'company',
+          name: 'dashboard-company',
+          component: Company
         }
       ]
     }
