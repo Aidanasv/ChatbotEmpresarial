@@ -28,10 +28,16 @@ export interface AppearanceSetup {
     widgetPosition: boolean;
 }
 
+export interface KnowledgeSetup {
+    documents: { title: string; url: string; status: string; size: number; createdAt: Date }[];
+    faqs: { question: string; answer: string; createdAt: Date; updatedAt: Date }[];
+}
+
 export interface SetUpState {
     isLoading: boolean;
     step: number;
     companySetup: CompanySetup;
     personalitySetup: PersonalitySetup;
     appearanceSetup: AppearanceSetup;
+    knowledgeSetup: KnowledgeSetup;
 }

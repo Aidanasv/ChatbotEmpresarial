@@ -25,6 +25,10 @@ export const useSetupStore = defineStore('setup', {
             primaryColor: '',
             showChatbotAvatar: false,
             widgetPosition: true
+        },
+        knowledgeSetup: {
+            documents: [],
+            faqs: []
         }
     }),
     actions: {
@@ -116,7 +120,5 @@ export const useSetupStore = defineStore('setup', {
                 throw error;
             }
         }
-
-
     }
 })

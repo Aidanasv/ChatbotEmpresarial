@@ -17,6 +17,7 @@ namespace backend.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public ICollection<User> Users { get; set; } = new List<User>();
         public ChatbotSettings? ChatbotSettings { get; set; }
+        public ICollection<Faq> Faqs { get; set; } = new List<Faq>();
 
     }
 }

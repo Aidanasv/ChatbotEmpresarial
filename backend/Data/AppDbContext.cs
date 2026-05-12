@@ -13,6 +13,7 @@ namespace backend.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<ChatbotSettings> ChatbotSettings { get; set; }
+        public DbSet<Faq> Faqs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -15,6 +15,7 @@ import { useSetupStore } from '@/stores/useSetupStore'
 import App from '@/App.vue'
 import Apperearance from '@/components/dashboard/Apperearance.vue'
 import Company from '@/components/dashboard/Company.vue'
+import Knowledge from '@/components/dashboard/Knowledge.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -81,6 +82,11 @@ const router = createRouter({
           path: 'company',
           name: 'dashboard-company',
           component: Company
+        },
+        {
+          path: 'knowledge',
+          name: 'dashboard-knowledge',
+          component: Knowledge,
         }
       ]
     }
