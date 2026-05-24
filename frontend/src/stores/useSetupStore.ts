@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { CompanySetup, PersonalitySetup, AppearanceSetup, SetUpState, CompanySetupResponse } from '@/types/setup'
+import type { CompanySetup, PersonalitySetup, AppearanceSetup, SetUpState, CompanySetupResponse, KnowledgeSetup } from '@/types/setup'
 import axios from 'axios'
 
 export const useSetupStore = defineStore('setup', {
@@ -86,6 +86,21 @@ export const useSetupStore = defineStore('setup', {
             }
         },
 
+        async saveKnowledgeSetup(knowledgeSetup: KnowledgeSetup) {
+            try {
+                this.isLoading = true;
+                const response = await axios.post('http://localhost:5267/api/setup/faqs', knowledgeSetup.faqs,
+                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                );
+                this.isLoading = false;
+                return response.data;
+            } catch (error) {
+                this.isLoading = false;
+                console.error('Error saving knowledge setup:', error);
+                throw error;
+            }
+        },
+
         async saveInitialSetup() {
             try {
                 this.isLoading = true;
@@ -109,10 +124,11 @@ export const useSetupStore = defineStore('setup', {
                 const response = await axios.get(`http://localhost:5267/api/setup/setup/${companyId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
-                const { companySetup, personalitySetup, appearanceSetup } = response.data;
+                const { companySetup, personalitySetup, appearanceSetup, knowledgeSetup } = response.data;
                 this.companySetup = companySetup;
                 this.personalitySetup = personalitySetup;
                 this.appearanceSetup = appearanceSetup;
+                this.knowledgeSetup = knowledgeSetup;
                 this.isLoading = false;
             } catch (error) {
                 this.isLoading = false;

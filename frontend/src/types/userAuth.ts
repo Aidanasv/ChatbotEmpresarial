@@ -13,6 +13,7 @@ export interface UserAuthResponse {
   token: string;
   userId?: number;
   email?: string;
+  chatbotId?: number;
 }
 
 export interface AuthState {
@@ -20,4 +21,5 @@ export interface AuthState {
   email: string | null;
   role: string | null;
   companyId: string | null;
+  chatbotId: string | null;
 }

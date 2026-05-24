@@ -3,6 +3,7 @@ using backend.Data;
 using backend.DTOs;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,7 @@ namespace backend.Controllers
         {
             var company = await _context.Companies
                 .Include(c => c.ChatbotSettings)
+                .Include(c => c.Faqs)
                 .FirstOrDefaultAsync(c => c.Id == companyId);
             if (company == null)
             {
@@ -49,7 +51,18 @@ namespace backend.Controllers
                     ChatbotTone = company.ChatbotSettings.ChatbotTone,
                     GreetingMessage = company.ChatbotSettings.GreetingMessage,
                     FallbackMessage = company.ChatbotSettings.FallbackMessage
-                } : new PersonalitySetupDto()
+                } : new PersonalitySetupDto(),
+                KnowledgeSetup = new KnowledgeSetupDto
+                {
+                    Faqs = company.Faqs.Select(f => new FaqResponseDto
+                    {
+                        Id = f.Id,
+                        Question = f.Question,
+                        Answer = f.Answer,
+                        CreatedAt = f.CreatedAt,
+                        UpdatedAt = f.UpdatedAt
+                    }).ToList()
+                }
             };
 
             return Ok(setupResponse);
@@ -268,6 +281,60 @@ namespace backend.Controllers
             _context.ChatbotSettings.Update(chatbotSettings);
             await _context.SaveChangesAsync();
             return Ok(appearanceSetup);
+        }
+
+        [Authorize(Roles = nameof(Role.Admin))]
+        [HttpPost("faqs")]
+        public async Task<IActionResult> SaveCompanyFaqs(List<FaqDto> knowledgeSetup)
+        {
+            var userId = GetUserIdFromToken();
+            var companyId = GetCompanyIdFromToken();
+            if (userId == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return Unauthorized("Usuario no encontrado.");
+            }
+            else if (companyId == null || user.CompanyId == null)
+            {
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+            else if (companyId != null && user.CompanyId != companyId)
+            {
+                return Forbid("El usuario no tiene permiso para editar esta empresa.");
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.Faqs)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            // Eliminar las FAQs existentes
+            _context.Faqs.RemoveRange(company.Faqs);
+
+            // Agregar las nuevas FAQs
+            foreach (var faqDto in knowledgeSetup)
+            {
+                var faq = new Faq
+                {
+                    CompanyId = company.Id,
+                    Question = faqDto.Question,
+                    Answer = faqDto.Answer,
+                    CreatedAt = faqDto.CreatedAt ?? DateTime.UtcNow,
+                    UpdatedAt = faqDto.UpdatedAt ?? DateTime.UtcNow
+                };
+                _context.Faqs.Add(faq);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(knowledgeSetup);
         }
 
         private int? GetUserIdFromToken()

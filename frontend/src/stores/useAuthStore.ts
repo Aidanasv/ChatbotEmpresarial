@@ -8,7 +8,8 @@ export const useAuthStore = defineStore("auth", {
         userId: localStorage.getItem("userId") || null,
         email: localStorage.getItem("email") || null,
         role: localStorage.getItem("role") || null,
-        companyId: localStorage.getItem("companyId") || null
+        companyId: localStorage.getItem("companyId") || null,
+        chatbotId: localStorage.getItem("chatbotId") || null
     }),
 
     getters: {
@@ -40,12 +41,13 @@ export const useAuthStore = defineStore("auth", {
             this.email = decodedToken.email;
             this.role = decodedToken.role;
             this.companyId = decodedToken.companyId;
-
+            this.chatbotId = decodedToken.chatbotId;
             localStorage.setItem("token", token);
             localStorage.setItem("userId", this.userId || "");
             localStorage.setItem("email", this.email || "");
             localStorage.setItem("role", this.role || "");
             localStorage.setItem("companyId", this.companyId || "");
+            localStorage.setItem("chatbotId", this.chatbotId || "");
         },
 
         logout() {
@@ -53,7 +55,7 @@ export const useAuthStore = defineStore("auth", {
             this.email = null;
             this.role = null;
             this.companyId = null;
-
+            this.chatbotId = null;
             localStorage.clear();
         }
     }

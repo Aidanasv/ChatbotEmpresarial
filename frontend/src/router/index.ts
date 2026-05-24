@@ -10,6 +10,7 @@ import Conversations from '@/components/dashboard/Conversations.vue'
 import Analytics from '@/components/dashboard/Analytics.vue'
 import Users from '@/components/dashboard/Users.vue'
 import Personality from '@/components/dashboard/Personality.vue'
+import TryChatbot from '@/components/dashboard/TryChatbot.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSetupStore } from '@/stores/useSetupStore'
 import App from '@/App.vue'
@@ -51,42 +52,56 @@ const router = createRouter({
         {
           path: 'panel',
           name: 'dashboard-panel',
-          component: Panel
+          component: Panel,
+          meta: { title: 'Panel de control' }
+        },
+        {
+          path: 'try-chatbot',
+          name: 'dashboard-try-chatbot',
+          component: TryChatbot,
+          meta: { title: 'Probar chatbot' }
         },
         {
           path: 'conversations',
           name: 'dashboard-conversations',
-          component: Conversations
+          component: Conversations,
+          meta: { title: 'Conversaciones' }
         },
         {
           path: 'analytics',
           name: 'dashboard-analytics',
-          component: Analytics
+          component: Analytics,
+          meta: { title: 'Analíticas' }
         },
         {
           path: 'users',
           name: 'dashboard-users',
-          component: Users
+          component: Users,
+          meta: { title: 'Usuarios' }
         },
         {
           path: 'personality',
           name: 'dashboard-personality',
-          component: Personality
+          component: Personality,
+          meta: { title: 'Personalidad' }
         },
         {
           path: 'appearance',
           name: 'dashboard-appearance',
-          component: Apperearance
+          component: Apperearance,
+          meta: { title: 'Apariencia' }
         },
         {
           path: 'company',
           name: 'dashboard-company',
-          component: Company
+          component: Company,
+          meta: { title: 'Perfil' }
         },
         {
           path: 'knowledge',
           name: 'dashboard-knowledge',
           component: Knowledge,
+          meta: { title: 'Conocimiento' }
         }
       ]
     }

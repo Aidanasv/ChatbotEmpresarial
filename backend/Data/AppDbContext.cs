@@ -14,6 +14,8 @@ namespace backend.Data
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<ChatbotSettings> ChatbotSettings { get; set; }
         public DbSet<Faq> Faqs { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -44,6 +46,14 @@ namespace backend.Data
 
             modelBuilder.Entity<ChatbotSettings>()
                 .Property(c => c.ShowAvatar)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Conversation>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
+            
+            modelBuilder.Entity<Message>()
+                .Property(m => m.Role)
                 .HasConversion<string>();
         }
     }

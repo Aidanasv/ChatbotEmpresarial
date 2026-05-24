@@ -30,7 +30,7 @@ export interface AppearanceSetup {
 
 export interface KnowledgeSetup {
     documents: { title: string; url: string; status: string; size: number; createdAt: Date }[];
-    faqs: { question: string; answer: string; createdAt: Date; updatedAt: Date }[];
+    faqs: { id: number | null; question: string; answer: string; createdAt: string | null; updatedAt: string | null }[];
 }
 
 export interface SetUpState {

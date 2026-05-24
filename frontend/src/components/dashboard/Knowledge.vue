@@ -32,12 +32,12 @@ const knowledge = computed({
 })
 
 const saveChanges = async () => {
-    /* try {
+    try {
         await setupStore.saveKnowledgeSetup(knowledge.value)
         
         console.log("¡Conocimiento del chatbot guardado correctamente!")
     } catch (error) {
         console.error("Error al guardar el conocimiento:", error)
-    } */
+    }
 }
 </script>

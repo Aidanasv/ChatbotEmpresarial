@@ -1,64 +1,248 @@
 <template>
-  <div class="step-content text-left">
+  <v-sheet max-width="1000" class="mx-auto bg-transparent">
+    
     <div class="mb-8">
-      <h2 class="text-h5 font-weight-bold mb-1">Base de conocimiento</h2>
-      <p class="text-medium-emphasis">Proporciona la información que usará tu chatbot para responder</p>
+      <h1 class="text-h4 font-weight-bold mb-2">Base de conocimiento</h1>
+      <p class="text-medium-emphasis">Gestiona la información que usará tu chatbot para responder</p>
     </div>
 
-    <v-form>
-      <div class="upload-zone mb-8 d-flex flex-column align-center justify-center pa-10 rounded-xl cursor-pointer"
-        @click="triggerFile">
-        <v-icon size="40" class="mb-3 upload-icon text-medium-emphasis">mdi-upload-outline</v-icon>
-        <div class="font-weight-bold text-body-1">Sube documentos de tu empresa</div>
-        <div class="text-caption text-medium-emphasis">PDF, DOCX, TXT — máx. 10MB por archivo</div>
-
-        <input type="file" class="d-none" ref="fileInput" @change="handleFileSelect" multiple accept=".pdf,.docx,.txt">
-
-        <v-btn variant="text" color="primary" class="mt-4 text-none font-weight-bold">
-          Seleccionar archivos
-        </v-btn>
+   <!--  <v-card class="mb-6 pa-6 pa-md-8 rounded-xl" border elevation="0">
+      <div class="d-flex align-center mb-1">
+        <v-icon color="primary" class="mr-3" size="28">mdi-file-document-multiple-outline</v-icon>
+        <h2 class="text-h6 font-weight-bold mb-0">Documentos</h2>
       </div>
+      <p class="text-medium-emphasis text-body-2 mb-6 ml-10">Sube archivos con información sobre tu empresa</p>
 
-      <label class="form-label">Preguntas frecuentes</label>
-      <v-textarea :model-value="modelValue.faqs" @update:model-value="update('faqs', $event)"
-        placeholder="P: ¿Cuál es el horario de atención? \nR: Lunes a viernes de 9:00 a 18:00." variant="solo" flat
-        class="setup-input mb-6" rows="3" hide-details></v-textarea>
-    </v-form>
-  </div>
+      <v-hover v-slot="{ isHovering, props }">
+        <v-sheet
+          v-bind="props"
+          :class="[
+            'd-flex flex-column align-center justify-center pa-10 cursor-pointer ml-md-10 rounded-xl border-dashed transition-swing',
+            isHovering ? 'border-primary bg-primary-lighten-5 border-opacity-75' : 'border-medium-emphasis bg-grey-lighten-5 border-opacity-25'
+          ]"
+          border="md"
+          @click="triggerFile"
+        >
+          <v-icon size="40" class="mb-3 text-medium-emphasis">mdi-upload-outline</v-icon>
+          <div class="font-weight-bold text-body-1">Sube documentos de tu empresa</div>
+          <div class="text-caption text-medium-emphasis">PDF, DOCX, TXT — máx. 10MB por archivo</div>
+
+          <input type="file" class="d-none" ref="fileInput" @change="handleFileSelect" multiple accept=".pdf,.docx,.txt">
+
+          <v-btn variant="tonal" color="primary" class="mt-4 text-none font-weight-bold px-6" rounded="lg">
+            Seleccionar archivos
+          </v-btn>
+        </v-sheet>
+      </v-hover>
+
+      <v-list v-if="documents.length > 0" class="mt-4 ml-md-10 bg-transparent">
+        <v-list-item v-for="(doc, index) in documents" :key="index" class="border rounded-lg mb-2 pa-3">
+          <template v-slot:prepend>
+            <v-icon color="primary">mdi-file-outline</v-icon>
+          </template>
+          <v-list-item-title class="font-weight-medium">{{ doc.title }}</v-list-item-title>
+          <template v-slot:append>
+            <v-btn icon="mdi-delete-outline" variant="text" color="error" density="comfortable" @click="removeDocument(index)"></v-btn>
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-card> -->
+
+    <v-card class="pa-6 pa-md-8 rounded-xl" border elevation="0">
+      <div class="d-flex align-center justify-space-between mb-1">
+        <div class="d-flex align-center">
+          <v-icon color="primary" class="mr-3" size="28">mdi-help-circle-outline</v-icon>
+          <h2 class="text-h6 font-weight-bold mb-0">Preguntas frecuentes</h2>
+        </div>
+        <v-chip variant="outlined" color="primary" size="small" class="font-weight-bold">
+          {{ faqs.length }} FAQs
+        </v-chip>
+      </div>
+      <p class="text-medium-emphasis text-body-2 mb-6 ml-10">Respuestas predefinidas para consultas comunes</p>
+
+      <div class="ml-md-10">
+        <div class="mb-6">
+          <v-hover v-slot="{ isHovering, props }" v-for="(faq, index) in faqs" :key="index">
+            <v-card 
+              v-bind="props"
+              variant="outlined" 
+              :class="['rounded-lg pa-4 mb-3 transition-swing', 
+                       isHovering && editingIndex !== index ? 'bg-grey-lighten-4' : 'bg-transparent']"
+            >
+              <div v-if="editingIndex !== index" class="d-flex justify-space-between align-start">
+                <div>
+                  <div class="font-weight-bold text-body-1 mb-1">{{ faq.question }}</div>
+                  <div class="text-medium-emphasis text-body-2">{{ faq.answer }}</div>
+                </div>
+                <div class="d-flex align-center">
+                  <v-btn icon="mdi-pencil-outline" variant="text" color="medium-emphasis" density="comfortable" class="mr-1" @click="startEdit(index)"></v-btn>
+                  <v-btn icon="mdi-delete-outline" variant="text" color="medium-emphasis" density="comfortable" @click="removeFaq(index)"></v-btn>
+                </div>
+              </div>
+
+              <div v-else class="w-100">
+                <v-text-field
+                  v-model="editTempQuestion"
+                  label="Pregunta"
+                  variant="outlined"
+                  density="compact"
+                  bg-color="white"
+                  class="mb-3"
+                  hide-details
+                ></v-text-field>
+
+                <v-textarea
+                  v-model="editTempAnswer"
+                  label="Respuesta"
+                  variant="outlined"
+                  density="compact"
+                  bg-color="white"
+                  class="mb-3"
+                  rows="2"
+                  hide-details
+                ></v-textarea>
+
+                <div class="d-flex justify-end">
+                  <v-btn variant="text" color="medium-emphasis" class="text-none mr-2" @click="cancelEdit">Cancelar</v-btn>
+                  <v-btn color="primary" class="text-none" elevation="0" @click="saveEdit(index)">Guardar</v-btn>
+                </div>
+              </div>
+            </v-card>
+          </v-hover>
+        </div>
+
+        <v-sheet border="dashed" class="rounded-lg pa-5 bg-transparent border-opacity-50 border-medium-emphasis">
+          <div class="font-weight-medium mb-4 d-flex align-center">
+            <v-icon size="20" class="mr-2">mdi-plus</v-icon> Añadir nueva FAQ
+          </div>
+          
+          <v-text-field
+            v-model="newQuestion"
+            placeholder="Pregunta..."
+            variant="outlined"
+            density="comfortable"
+            bg-color="grey-lighten-5"
+            class="mb-3"
+            hide-details
+          ></v-text-field>
+
+          <v-textarea
+            v-model="newAnswer"
+            placeholder="Respuesta..."
+            variant="outlined"
+            density="comfortable"
+            bg-color="grey-lighten-5"
+            class="mb-4"
+            rows="3"
+            hide-details
+          ></v-textarea>
+
+          <v-btn 
+            color="primary" 
+            class="text-none font-weight-bold px-6" 
+            rounded="lg"
+            elevation="0"
+            :disabled="!newQuestion || !newAnswer"
+            @click="addFaq"
+          >
+            Añadir FAQ
+          </v-btn>
+        </v-sheet>
+      </div>
+    </v-card>
+
+  </v-sheet>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 const props = defineProps<{
   modelValue: {
-    documents: { title: string; url: string; status: string; size: number; createdAt: Date }[];
-    faqs: { question: string; answer: string; createdAt: Date; updatedAt: Date }[];
+    faqs: { id: number | null, question: string, answer: string, createdAt: string | null, updatedAt: string | null }[],
+    documents: { title: string, url: string }[]
   }
 }>()
 
 const emit = defineEmits(['update:modelValue'])
 
-const update = (field: string, value: any) => {
-  emit('update:modelValue', { ...props.modelValue, [field]: value })
-}
-
+// --- LÓGICA DE DOCUMENTOS ---
+const documents = computed(() => props.modelValue.documents)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-const triggerFile = () => {
-  fileInput.value?.click()
-}
+const triggerFile = () => fileInput.value?.click()
 
 const handleFileSelect = (event: Event) => {
   const target = event.target as HTMLInputElement
   if (target.files && target.files.length > 0) {
-    update('documents', Array.from(target.files).map(file => ({
+    const newDocs = Array.from(target.files).map(file => ({
       title: file.name,
-      url: URL.createObjectURL(file),
-      status: 'pending',
-      size: file.size,
-      createdAt: new Date()
-    })))
+      url: URL.createObjectURL(file)
+    }))
+    
+    emit('update:modelValue', {
+      ...props.modelValue,
+      documents: [...documents.value, ...newDocs]
+    })
   }
+  // Limpiar el input para permitir subir el mismo archivo si se borra y se vuelve a elegir
+  if (fileInput.value) fileInput.value.value = ''
+}
+
+const removeDocument = (index: number) => {
+  const updatedDocs = documents.value.filter((_, i) => i !== index)
+  emit('update:modelValue', { ...props.modelValue, documents: updatedDocs })
+}
+
+// --- LÓGICA DE FAQS ---
+const faqs = computed(() => props.modelValue.faqs)
+const newQuestion = ref('')
+const newAnswer = ref('')
+
+const addFaq = () => {
+  const updatedFaqs = [...faqs.value, { id: null, question: newQuestion.value, answer: newAnswer.value, createdAt: null, updatedAt: null }]
+  emit('update:modelValue', { ...props.modelValue, faqs: updatedFaqs })
+  newQuestion.value = ''
+  newAnswer.value = ''
+}
+
+const removeFaq = (index: number) => {
+  const updatedFaqs = faqs.value.filter((_, i) => i !== index)
+  emit('update:modelValue', { ...props.modelValue, faqs: updatedFaqs })
+  
+  if (editingIndex.value === index) cancelEdit()
+}
+
+// --- LÓGICA DE EDICIÓN EN LÍNEA ---
+const editingIndex = ref<number | null>(null)
+const editTempQuestion = ref('')
+const editTempAnswer = ref('')
+
+const startEdit = (index: number) => {
+  editingIndex.value = index
+  if (faqs.value[index]) {
+    editTempQuestion.value = faqs.value[index].question
+    editTempAnswer.value = faqs.value[index].answer
+  }
+}
+
+const cancelEdit = () => {
+  editingIndex.value = null
+  editTempQuestion.value = ''
+  editTempAnswer.value = ''
+}
+
+const saveEdit = (index: number) => {
+  const updatedFaqs = [...faqs.value]
+  if (updatedFaqs[index]) {
+    updatedFaqs[index] = { 
+      ...updatedFaqs[index], 
+      question: editTempQuestion.value, 
+      answer: editTempAnswer.value 
+    }
+  }
+  
+  emit('update:modelValue', { ...props.modelValue, faqs: updatedFaqs })
+  cancelEdit()
 }
 </script>
