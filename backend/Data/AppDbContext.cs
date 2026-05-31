@@ -16,7 +16,7 @@ namespace backend.Data
         public DbSet<Faq> Faqs { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
-
+        public DbSet<DocumentSource> DocumentSources { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -54,6 +54,10 @@ namespace backend.Data
             
             modelBuilder.Entity<Message>()
                 .Property(m => m.Role)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<DocumentSource>()
+                .Property(d => d.DocumentType)
                 .HasConversion<string>();
         }
     }

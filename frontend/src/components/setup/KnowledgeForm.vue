@@ -6,49 +6,42 @@
       <p class="text-medium-emphasis">Gestiona la información que usará tu chatbot para responder</p>
     </div>
 
-   <!--  <v-card class="mb-6 pa-6 pa-md-8 rounded-xl" border elevation="0">
+    <v-card class="mb-6 pa-6 pa-md-8 rounded-xl" border elevation="0">
       <div class="d-flex align-center mb-1">
         <v-icon color="primary" class="mr-3" size="28">mdi-file-document-multiple-outline</v-icon>
         <h2 class="text-h6 font-weight-bold mb-0">Documentos</h2>
       </div>
       <p class="text-medium-emphasis text-body-2 mb-6 ml-10">Sube archivos con información sobre tu empresa</p>
 
-      <v-hover v-slot="{ isHovering, props }">
-        <v-sheet
-          v-bind="props"
-          :class="[
-            'd-flex flex-column align-center justify-center pa-10 cursor-pointer ml-md-10 rounded-xl border-dashed transition-swing',
-            isHovering ? 'border-primary bg-primary-lighten-5 border-opacity-75' : 'border-medium-emphasis bg-grey-lighten-5 border-opacity-25'
-          ]"
-          border="md"
-          @click="triggerFile"
-        >
-          <v-icon size="40" class="mb-3 text-medium-emphasis">mdi-upload-outline</v-icon>
-          <div class="font-weight-bold text-body-1">Sube documentos de tu empresa</div>
-          <div class="text-caption text-medium-emphasis">PDF, DOCX, TXT — máx. 10MB por archivo</div>
+      <div class="ml-md-10">
+        <v-file-input
+          v-model="chosenFiles"
+          label="Selecciona o arrastra tus documentos (PDF, DOCX, TXT)"
+          multiple
+          accept=".pdf,.docx,.txt"
+          variant="outlined"
+          prepend-icon="mdi-upload-outline"
+          bg-color="grey-lighten-5"
+          class="rounded-lg"
+          show-size
+          @update:model-value="handleFileSelect"
+        ></v-file-input>
 
-          <input type="file" class="d-none" ref="fileInput" @change="handleFileSelect" multiple accept=".pdf,.docx,.txt">
+        <v-list class="mt-4 bg-transparent pa-0">
+          <v-list-item v-for="(doc, index) in documents" :key="index" class="border rounded-lg mb-2 pa-3">
+            <template v-slot:prepend>
+              <v-icon color="primary">mdi-file-outline</v-icon>
+            </template>
+            <v-list-item-title class="font-weight-medium">{{ doc.name }}</v-list-item-title>
+            <template v-slot:append>
+              <v-btn icon="mdi-delete-outline" variant="text" color="error" density="comfortable" @click="removeDocument(index)"></v-btn>
+            </template>
+          </v-list-item>
+        </v-list>
+      </div>
+    </v-card>
 
-          <v-btn variant="tonal" color="primary" class="mt-4 text-none font-weight-bold px-6" rounded="lg">
-            Seleccionar archivos
-          </v-btn>
-        </v-sheet>
-      </v-hover>
-
-      <v-list v-if="documents.length > 0" class="mt-4 ml-md-10 bg-transparent">
-        <v-list-item v-for="(doc, index) in documents" :key="index" class="border rounded-lg mb-2 pa-3">
-          <template v-slot:prepend>
-            <v-icon color="primary">mdi-file-outline</v-icon>
-          </template>
-          <v-list-item-title class="font-weight-medium">{{ doc.title }}</v-list-item-title>
-          <template v-slot:append>
-            <v-btn icon="mdi-delete-outline" variant="text" color="error" density="comfortable" @click="removeDocument(index)"></v-btn>
-          </template>
-        </v-list-item>
-      </v-list>
-    </v-card> -->
-
-    <v-card class="pa-6 pa-md-8 rounded-xl" border elevation="0">
+    <v-card class="pa-6 pa-md-8 rounded-xl mb-6" border elevation="0">
       <div class="d-flex align-center justify-space-between mb-1">
         <div class="d-flex align-center">
           <v-icon color="primary" class="mr-3" size="28">mdi-help-circle-outline</v-icon>
@@ -160,41 +153,58 @@ import { ref, computed } from 'vue'
 const props = defineProps<{
   modelValue: {
     faqs: { id: number | null, question: string, answer: string, createdAt: string | null, updatedAt: string | null }[],
-    documents: { title: string, url: string }[]
+    documents: { name: string, id?: string, createdAt?: string }[]
   }
 }>()
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'update:pendingFiles'])
 
-// --- LÓGICA DE DOCUMENTOS ---
+const rawFilesList = ref<{ tempId: string, file: File }[]>([]) 
+const chosenFiles = ref<File[]>([])
+
 const documents = computed(() => props.modelValue.documents)
-const fileInput = ref<HTMLInputElement | null>(null)
 
-const triggerFile = () => fileInput.value?.click()
+const handleFileSelect = (files: File | File[] | null) => {
+  if (!files) return
+  const fileArray = Array.isArray(files) ? files : [files]
+  if (fileArray.length === 0) return
 
-const handleFileSelect = (event: Event) => {
-  const target = event.target as HTMLInputElement
-  if (target.files && target.files.length > 0) {
-    const newDocs = Array.from(target.files).map(file => ({
-      title: file.name,
-      url: URL.createObjectURL(file)
-    }))
-    
-    emit('update:modelValue', {
-      ...props.modelValue,
-      documents: [...documents.value, ...newDocs]
-    })
-  }
-  // Limpiar el input para permitir subir el mismo archivo si se borra y se vuelve a elegir
-  if (fileInput.value) fileInput.value.value = ''
+  // Generamos ids temporales para relacionar cada item visual con su archivo binario pendiente
+  const pendingEntries = fileArray.map(file => ({
+    tempId: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    file
+  }))
+
+  rawFilesList.value = [...rawFilesList.value, ...pendingEntries]
+  emit('update:pendingFiles', rawFilesList.value.map(item => item.file))
+
+  // Mapeamos para la lista visual del componente
+  const newDocs = pendingEntries.map(({ file, tempId }) => ({
+    name: file.name,
+    id: tempId,
+    createdAt: undefined
+  }))
+  
+  emit('update:modelValue', {
+    ...props.modelValue,
+    documents: [...documents.value, ...newDocs]
+  })
+
+  chosenFiles.value = []
 }
 
 const removeDocument = (index: number) => {
+  const docToRemove = documents.value[index]
   const updatedDocs = documents.value.filter((_, i) => i !== index)
+
+  if (docToRemove?.id?.startsWith('tmp-')) {
+    rawFilesList.value = rawFilesList.value.filter(entry => entry.tempId !== docToRemove.id)
+    emit('update:pendingFiles', rawFilesList.value.map(item => item.file))
+  }
+  
   emit('update:modelValue', { ...props.modelValue, documents: updatedDocs })
 }
 
-// --- LÓGICA DE FAQS ---
 const faqs = computed(() => props.modelValue.faqs)
 const newQuestion = ref('')
 const newAnswer = ref('')
@@ -213,7 +223,6 @@ const removeFaq = (index: number) => {
   if (editingIndex.value === index) cancelEdit()
 }
 
-// --- LÓGICA DE EDICIÓN EN LÍNEA ---
 const editingIndex = ref<number | null>(null)
 const editTempQuestion = ref('')
 const editTempAnswer = ref('')
@@ -245,4 +254,5 @@ const saveEdit = (index: number) => {
   emit('update:modelValue', { ...props.modelValue, faqs: updatedFaqs })
   cancelEdit()
 }
+
 </script>

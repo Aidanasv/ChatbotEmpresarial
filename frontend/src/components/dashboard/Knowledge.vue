@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="pa-6 pa-md-8 analytics-container">
     
-    <KnowledgeForm v-model="knowledge" />
+    <KnowledgeForm v-model="knowledge" @update:pending-files="onPendingFilesUpdate" />
     
     <div class="d-flex justify-end mt-8">
       <v-btn 
@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useSetupStore } from '@/stores/useSetupStore'
 import KnowledgeForm from '@/components/setup/KnowledgeForm.vue'
 
@@ -31,9 +31,16 @@ const knowledge = computed({
     set: (val) => { setupStore.knowledgeSetup = val }
 })
 
+const pendingFiles = ref<File[]>([])
+
+const onPendingFilesUpdate = (files: File[]) => {
+  pendingFiles.value = files
+}
+
 const saveChanges = async () => {
     try {
-        await setupStore.saveKnowledgeSetup(knowledge.value)
+    await setupStore.saveKnowledgeSetup(knowledge.value, pendingFiles.value)
+    pendingFiles.value = []
         
         console.log("¡Conocimiento del chatbot guardado correctamente!")
     } catch (error) {

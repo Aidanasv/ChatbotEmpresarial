@@ -18,6 +18,7 @@ namespace backend.Models
         public ICollection<User> Users { get; set; } = new List<User>();
         public ChatbotSettings? ChatbotSettings { get; set; }
         public ICollection<Faq> Faqs { get; set; } = new List<Faq>();
+        public ICollection<DocumentSource> DocumentSources { get; set; } = new List<DocumentSource>();
 
     }
 }

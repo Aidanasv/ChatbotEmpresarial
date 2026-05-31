@@ -29,7 +29,7 @@ export interface AppearanceSetup {
 }
 
 export interface KnowledgeSetup {
-    documents: { title: string; url: string; status: string; size: number; createdAt: Date }[];
+    documents: { name: string; id?: string; createdAt?: string }[];
     faqs: { id: number | null; question: string; answer: string; createdAt: string | null; updatedAt: string | null }[];
 }
 

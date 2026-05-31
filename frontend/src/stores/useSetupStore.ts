@@ -86,12 +86,22 @@ export const useSetupStore = defineStore('setup', {
             }
         },
 
-        async saveKnowledgeSetup(knowledgeSetup: KnowledgeSetup) {
+        async saveKnowledgeSetup(knowledgeSetup: KnowledgeSetup, files: File[] = []) {
             try {
                 this.isLoading = true;
                 const response = await axios.post('http://localhost:5267/api/setup/faqs', knowledgeSetup.faqs,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
+
+                if (files.length > 0) {
+                    const formData = new FormData();
+                    files.forEach(file => formData.append('files', file));
+
+                    await axios.post('http://localhost:5267/api/documentSources', formData,
+                        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                    );
+                }
+
                 this.isLoading = false;
                 return response.data;
             } catch (error) {

@@ -27,6 +27,8 @@ namespace backend.Controllers
             var company = await _context.Companies
                 .Include(c => c.ChatbotSettings)
                 .Include(c => c.Faqs)
+                .Include(c => c.DocumentSources)
+
                 .FirstOrDefaultAsync(c => c.Id == companyId);
             if (company == null)
             {
@@ -61,6 +63,12 @@ namespace backend.Controllers
                         Answer = f.Answer,
                         CreatedAt = f.CreatedAt,
                         UpdatedAt = f.UpdatedAt
+                    }).ToList(),
+                    Documents = company.DocumentSources.Select(d => new DocumentSourceResponseDto
+                    {
+                        Id = d.Id,
+                        Name = d.Name,
+                        CreatedAt = d.CreatedAt
                     }).ToList()
                 }
             };

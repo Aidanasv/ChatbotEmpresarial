@@ -185,10 +185,9 @@ const sendMessage = async () => {
     if (!trimmed || !hasConversation.value) return
 
     chatbotStore.conversations.push({ id: Date.now(), role: 'user', content: trimmed, time: getTimeLabel() })
-
-    await chatbotStore.sendMenssage(trimmed)
-
     inputMessage.value = ''
+    await chatbotStore.sendMenssage(trimmed)
+    
 }
 
 const resetChat = () => {

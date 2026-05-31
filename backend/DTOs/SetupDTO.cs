@@ -44,9 +44,11 @@ namespace backend.DTOs
         public KnowledgeSetupDto KnowledgeSetup { get; set; } = new KnowledgeSetupDto();
     }
 
+    
     public class KnowledgeSetupDto
     {
         public List<FaqResponseDto> Faqs { get; set; } = new List<FaqResponseDto>();
+        public List<DocumentSourceResponseDto> Documents { get; set; } = new List<DocumentSourceResponseDto>();
 
     }
 
