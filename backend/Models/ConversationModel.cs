@@ -14,6 +14,7 @@ namespace backend.Models
         public string Topic { get; set; } = string.Empty;
         public ConversationStatus Status { get; set; } = ConversationStatus.Open;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public List<Message> Messages { get; set; } = new List<Message>();
     }
 
     public class Message

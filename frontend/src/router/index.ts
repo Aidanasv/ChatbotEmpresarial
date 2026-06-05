@@ -5,18 +5,16 @@ import LoginView from '@/pages/Login.vue'
 import SetupView from '@/pages/Setup.vue'
 import DashboardView from '@/pages/Dashboard.vue'
 
-import Panel from '@/components/dashboard/Panel.vue'
 import Conversations from '@/components/dashboard/Conversations.vue'
-import Analytics from '@/components/dashboard/Analytics.vue'
 import Users from '@/components/dashboard/Users.vue'
 import Personality from '@/components/dashboard/Personality.vue'
 import TryChatbot from '@/components/dashboard/TryChatbot.vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSetupStore } from '@/stores/useSetupStore'
-import App from '@/App.vue'
 import Apperearance from '@/components/dashboard/Apperearance.vue'
 import Company from '@/components/dashboard/Company.vue'
 import Knowledge from '@/components/dashboard/Knowledge.vue'
+import HomeDashboard from '@/components/dashboard/HomeDashboard.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -46,14 +44,18 @@ const router = createRouter({
           return '/login'
         }
         const setupStore = useSetupStore()
-        await setupStore.getSetupData(authStore.companyId)
+        if (authStore.companyId) {
+          await setupStore.getSetupData(parseInt(authStore.companyId))
+        }else {
+          return '/setup'
+        }
       },
       children: [
         {
           path: 'panel',
           name: 'dashboard-panel',
-          component: Panel,
-          meta: { title: 'Panel de control' }
+          component: HomeDashboard,
+          meta: { title: 'Home' }
         },
         {
           path: 'try-chatbot',
@@ -66,12 +68,6 @@ const router = createRouter({
           name: 'dashboard-conversations',
           component: Conversations,
           meta: { title: 'Conversaciones' }
-        },
-        {
-          path: 'analytics',
-          name: 'dashboard-analytics',
-          component: Analytics,
-          meta: { title: 'Analíticas' }
         },
         {
           path: 'users',
@@ -106,7 +102,7 @@ const router = createRouter({
       ]
     }
   ],
-  
+
   scrollBehavior() {
     return { top: 0 }
   }

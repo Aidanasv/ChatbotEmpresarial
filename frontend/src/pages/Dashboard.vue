@@ -9,10 +9,9 @@
       <v-list density="compact" nav class="px-3">
         <v-list-subheader class="text-caption font-weight-bold text-uppercase">General</v-list-subheader>
         
-        <v-list-item to="/dashboard/panel" prepend-icon="mdi-view-dashboard" title="Panel" rounded="lg" color="primary"></v-list-item>
+        <v-list-item to="/dashboard/panel" prepend-icon="mdi-view-dashboard" title="Home" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/try-chatbot" prepend-icon="mdi-play-circle-outline" title="Probar chatbot" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/conversations" prepend-icon="mdi-message-text-outline" title="Conversaciones" rounded="lg" color="primary"></v-list-item>
-        <v-list-item to="/dashboard/analytics" prepend-icon="mdi-chart-bar" title="Analíticas" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/users" prepend-icon="mdi-account-multiple-outline" title="Usuarios" rounded="lg" color="primary"></v-list-item>
 
         <v-divider class="my-4"></v-divider>

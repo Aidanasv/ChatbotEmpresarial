@@ -109,7 +109,12 @@ namespace backend.Controllers
                 Role = "user"
             });
 
-
+            await _context.Messages.AddAsync(new Message
+            {
+                ConversationId = request.ConversationId,
+                Role = RoleInConversation.User,
+                Content = request.Message
+            });
 
             var responseGoogle = await client.Models.GenerateContentAsync(
               model: "gemini-flash-latest",
@@ -131,13 +136,6 @@ namespace backend.Controllers
             {
                 Response = responseGoogle.Candidates[0].Content.Parts[0].Text
             };
-
-            await _context.Messages.AddAsync(new Message
-            {
-                ConversationId = request.ConversationId,
-                Role = RoleInConversation.User,
-                Content = request.Message
-            });
 
             await _context.Messages.AddAsync(new Message
             {
