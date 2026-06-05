@@ -13,7 +13,10 @@ namespace backend.Data
         public DbSet<Company> Companies { get; set; }
         public DbSet<Subscription> Subscriptions { get; set; }
         public DbSet<ChatbotSettings> ChatbotSettings { get; set; }
-
+        public DbSet<Faq> Faqs { get; set; }
+        public DbSet<Conversation> Conversations { get; set; }
+        public DbSet<Message> Messages { get; set; }
+        public DbSet<DocumentSource> DocumentSources { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -43,6 +46,18 @@ namespace backend.Data
 
             modelBuilder.Entity<ChatbotSettings>()
                 .Property(c => c.ShowAvatar)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Conversation>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
+            
+            modelBuilder.Entity<Message>()
+                .Property(m => m.Role)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<DocumentSource>()
+                .Property(d => d.DocumentType)
                 .HasConversion<string>();
         }
     }

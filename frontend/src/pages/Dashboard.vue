@@ -9,9 +9,9 @@
       <v-list density="compact" nav class="px-3">
         <v-list-subheader class="text-caption font-weight-bold text-uppercase">General</v-list-subheader>
         
-        <v-list-item to="/dashboard/panel" prepend-icon="mdi-view-dashboard" title="Panel" rounded="lg" color="primary"></v-list-item>
+        <v-list-item to="/dashboard/panel" prepend-icon="mdi-view-dashboard" title="Home" rounded="lg" color="primary"></v-list-item>
+        <v-list-item to="/dashboard/try-chatbot" prepend-icon="mdi-play-circle-outline" title="Probar chatbot" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/conversations" prepend-icon="mdi-message-text-outline" title="Conversaciones" rounded="lg" color="primary"></v-list-item>
-        <v-list-item to="/dashboard/analytics" prepend-icon="mdi-chart-bar" title="Analíticas" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/users" prepend-icon="mdi-account-multiple-outline" title="Usuarios" rounded="lg" color="primary"></v-list-item>
 
         <v-divider class="my-4"></v-divider>
@@ -21,7 +21,7 @@
         <v-list-item to="/dashboard/knowledge" prepend-icon="mdi-book-open-variant" title="Conocimiento" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/personality" prepend-icon="mdi-account-voice" title="Personalidad" rounded="lg" color="primary"></v-list-item>
         <v-list-item to="/dashboard/appearance" prepend-icon="mdi-palette-outline" title="Apariencia" rounded="lg" color="primary"></v-list-item>
-        <v-list-item to="/dashboard/settings" prepend-icon="mdi-cog-outline" title="Configuración" rounded="lg" color="primary"></v-list-item>
+        <v-list-item to="/dashboard/company" prepend-icon="mdi-cog-outline" title="Perfil" rounded="lg" color="primary"></v-list-item>
       </v-list>
 
       <template v-slot:append>
@@ -36,7 +36,7 @@
 
     <v-app-bar flat elevation="0" height="70">
       <div class="ml-6">
-        <div class="text-subtitle-1 font-weight-bold line-height-1">Panel de control</div>
+        <div class="text-subtitle-1 font-weight-bold line-height-1">{{ headerTitle }}</div>
         <div class="text-caption text-medium-emphasis">Asistente Acme</div>
       </div>
 
@@ -55,5 +55,10 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+const headerTitle = computed(() => (route.meta.title as string) || 'Panel de control')
 
 </script>

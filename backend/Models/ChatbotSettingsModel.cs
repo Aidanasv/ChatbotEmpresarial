@@ -4,7 +4,7 @@ namespace backend.Models
     {
         public int Id { get; set; }
         public int CompanyId { get; set; }
-        public Company Company { get; set; }
+        public Company? Company { get; set; }
         public string ChatbotName { get; set; } = "Chatbot";
         public string PrimaryColor { get; set; } = "#007bff";
         public ChatbotTone ChatbotTone { get; set; } = ChatbotTone.Friendly;

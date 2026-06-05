@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using backend.Data;
 
@@ -11,9 +12,11 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260520182001_ConverssationModel")]
+    partial class ConverssationModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,36 +173,6 @@ namespace backend.Migrations
                     b.HasIndex("ChatbotSettingsId");
 
                     b.ToTable("Conversations");
-                });
-
-            modelBuilder.Entity("backend.Models.DocumentSource", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<int>("CompanyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("DocumentType")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Uri")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.ToTable("DocumentSources");
                 });
 
             modelBuilder.Entity("backend.Models.Faq", b =>
@@ -390,17 +363,6 @@ namespace backend.Migrations
                     b.Navigation("ChatbotSettings");
                 });
 
-            modelBuilder.Entity("backend.Models.DocumentSource", b =>
-                {
-                    b.HasOne("backend.Models.Company", "Company")
-                        .WithMany("DocumentSources")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-                });
-
             modelBuilder.Entity("backend.Models.Faq", b =>
                 {
                     b.HasOne("backend.Models.Company", "Company")
@@ -435,8 +397,6 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Company", b =>
                 {
                     b.Navigation("ChatbotSettings");
-
-                    b.Navigation("DocumentSources");
 
                     b.Navigation("Faqs");
 

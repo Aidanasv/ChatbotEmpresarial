@@ -54,7 +54,10 @@ namespace backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            var user = await _context.Users
+                .Include(u => u.Company)
+                .ThenInclude(c => c.ChatbotSettings)
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             {
                 return BadRequest("Correo o contraseña incorrectos.");
@@ -81,7 +84,8 @@ namespace backend.Controllers
                         new Claim("userId", Convert.ToString(userToken.Id)),
                         new Claim(ClaimTypes.Role, userToken.Role.ToString()),
                         new Claim(ClaimTypes.Email, userToken.Email),
-                        new Claim("companyId", userToken.CompanyId != null ? userToken.CompanyId.ToString() : "")
+                        new Claim("companyId", userToken.CompanyId != null ? userToken.CompanyId.ToString() : ""),
+                        new Claim("chatbotId", userToken.Company != null && userToken.Company.ChatbotSettings != null ? userToken.Company.ChatbotSettings.Id.ToString() : "")
                     }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

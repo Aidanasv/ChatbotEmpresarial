@@ -8,6 +8,8 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("BBDD");
+var googleApiKey = builder.Configuration["GOOGLE_API_KEY"];
+Environment.SetEnvironmentVariable("GOOGLE_API_KEY", googleApiKey);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
