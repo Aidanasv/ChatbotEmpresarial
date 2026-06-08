@@ -4,6 +4,7 @@ import HomeView from '@/pages/Index.vue'
 import LoginView from '@/pages/Login.vue'
 import SetupView from '@/pages/Setup.vue'
 import DashboardView from '@/pages/Dashboard.vue'
+import AdminDashboardView from '@/pages/AdminDashboard.vue'
 
 import Conversations from '@/components/dashboard/Conversations.vue'
 import Users from '@/components/dashboard/Users.vue'
@@ -15,6 +16,8 @@ import Apperearance from '@/components/dashboard/Apperearance.vue'
 import Company from '@/components/dashboard/Company.vue'
 import Knowledge from '@/components/dashboard/Knowledge.vue'
 import HomeDashboard from '@/components/dashboard/HomeDashboard.vue'
+import ViewDetailsCompany from '@/pages/ViewDetailsCompany.vue'
+import AdminSubscriptionsView from '@/pages/AdminSubscriptions.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -37,12 +40,22 @@ const router = createRouter({
     {
       path: '/dashboard',
       component: DashboardView,
-      redirect: '/dashboard/panel',
+      redirect: () => {
+        const authStore = useAuthStore()
+        const role = (authStore.role || '').toLowerCase()
+        return role === 'superadmin' ? '/dashboard/admin' : '/dashboard/panel'
+      },
       beforeEnter: async () => {
         const authStore = useAuthStore()
+        const role = (authStore.role || '').toLowerCase()
         if (!authStore.isAuthenticated) {
           return '/login'
         }
+
+        if (role === 'superadmin') {
+          return true
+        }
+
         const setupStore = useSetupStore()
         if (authStore.companyId) {
           await setupStore.getSetupData(parseInt(authStore.companyId))
@@ -56,6 +69,30 @@ const router = createRouter({
           name: 'dashboard-panel',
           component: HomeDashboard,
           meta: { title: 'Home' }
+        },
+        {
+          path: 'admin',
+          name: 'dashboard-admin',
+          component: AdminDashboardView,
+          meta: { title: 'Resumen global', subtitle: 'BotForge Admin' }
+        },
+        {
+          path: 'admin/subscriptions',
+          name: 'dashboard-admin-subscriptions',
+          component: AdminSubscriptionsView,
+          meta: { title: 'Suscripciones', subtitle: 'BotForge Admin' }
+        },
+        {
+          path: 'subscriptions',
+          name: 'dashboard-subscriptions',
+          component: AdminSubscriptionsView,
+          meta: { title: 'Suscripciones' }
+        },
+        {
+          path: 'admin/company/:companyId',
+          name: 'dashboard-admin-company-details',
+          component: ViewDetailsCompany,
+          meta: { title: 'Detalle de empresa', subtitle: 'BotForge Admin' }
         },
         {
           path: 'try-chatbot',
@@ -106,6 +143,33 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   }
+})
+
+router.beforeEach((to) => {
+  if (!to.path.startsWith('/dashboard')) {
+    return true
+  }
+
+  const authStore = useAuthStore()
+  if (!authStore.isAuthenticated) {
+    return '/login'
+  }
+
+  const role = (authStore.role || '').toLowerCase()
+  const isDashboardAdminRoute = to.path === '/dashboard/admin' || to.path.startsWith('/dashboard/admin/')
+
+  if (role === 'superadmin') {
+    if (!isDashboardAdminRoute) {
+      return '/dashboard/admin'
+    }
+    return true
+  }
+
+  if (isDashboardAdminRoute) {
+    return '/dashboard/panel'
+  }
+
+  return true
 })
 
 export default router

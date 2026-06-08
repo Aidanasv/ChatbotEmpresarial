@@ -15,8 +15,8 @@
 
         <div class="stepper-nav d-flex justify-center align-center mb-10 flex-wrap">
           <template v-for="(item, index) in stepsList" :key="index">
-            <v-chip :class="['step-pill', { 'is-active': step >= index + 1 }]"
-              variant="flat" class="px-5 py-4 font-weight-bold">
+            <v-chip :class="['step-pill', { 'is-active': step >= index + 1 }]" variant="flat"
+              class="px-5 py-4 font-weight-bold">
               <v-icon start size="small" v-if="step > index + 1">mdi-check</v-icon>
               <v-icon start size="small" v-else>{{ item.icon }}</v-icon>
               {{ item.text }}

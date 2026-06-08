@@ -12,6 +12,7 @@ namespace backend.Models
         public string FallbackMessage { get; set; } = "Lo siento, no entendí eso. ¿Podrías reformular tu pregunta?";
         public bool ShowAvatar { get; set; } = true;
         public bool WidgetPosition { get; set; } = true;
+        public List<Conversation> Conversations { get; set; } = new List<Conversation>();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
       

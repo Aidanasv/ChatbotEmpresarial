@@ -2,7 +2,7 @@
   <v-container fluid class="pa-0 v-window-item--active" style="height: calc(100vh - 64px);">
     <v-row no-gutters class="h-100">
 
-      <v-col cols="12" md="4" lg="3" class="d-flex flex-column border-e h-100 bg-surface">
+      <v-col v-if="!smAndDown || activeChatId === null" cols="12" md="4" lg="5" class="d-flex flex-column border-e h-100 bg-surface">
         <div class="pa-4 border-b">
           <h2 class="text-h6 font-weight-bold mb-4">Bandeja de entrada</h2>
           <v-text-field density="compact" variant="outlined" prepend-inner-icon="mdi-magnify"
@@ -23,7 +23,7 @@
           <v-list lines="two" class="flex-grow-1 overflow-y-auto pa-0 bg-transparent">
             <template v-for="(chat, index) in conversations" :key="chat.conversationId">
               <v-list-item :value="chat.conversationId" :active="activeChatId === chat.conversationId"
-                @click="activeChatId = chat.conversationId; conversationsStore.getConversationMessages(chat.conversationId)"
+                @click="selectConversation(chat.conversationId)"
                 class="px-4 py-3 v-card--link" active-color="primary">
                 <template v-slot:prepend>
                   <v-avatar
@@ -54,11 +54,12 @@
         </template>
       </v-col>
 
-      <v-col cols="12" md="8" lg="9" class="d-flex flex-column bg-grey-lighten-5 h-100">
+      <v-col v-if="!smAndDown || activeChatId !== null" cols="12" md="8" lg="7" class="d-flex flex-column bg-grey-lighten-5 h-100">
 
         <template v-if="conversationMessage">
           <div class="pa-4 bg-white border-b d-flex align-center justify-space-between flex-shrink-0">
             <div class="d-flex align-center">
+              <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" size="small" class="mr-2" @click="goBackToList"></v-btn>
               <v-avatar color="primary" variant="tonal" class="mr-3 font-weight-bold">
                 {{ conversationMessage.customerName ? conversationMessage.customerName.charAt(0).toUpperCase() : 'C' }}
               </v-avatar>
@@ -136,9 +137,13 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useConversationsStore } from '@/stores/useConversations'
 import { useAnalyticsStore } from '@/stores/useAnalyticsStore'
+import { useRoute } from 'vue-router'
+import { useDisplay } from 'vuetify'
 
 const conversationsStore = useConversationsStore()
 const analyticsStore = useAnalyticsStore()
+const route = useRoute()
+const { smAndDown } = useDisplay()
 const { conversations, limit, offset, conversationMessage } = storeToRefs(conversationsStore)
 const { totalConversations } = storeToRefs(analyticsStore)
 
@@ -147,6 +152,28 @@ const newMessage = ref('')
 const isLoading = ref(true)
 
 const currentPage = ref(1)
+
+const selectConversation = async (conversationId: number) => {
+  activeChatId.value = conversationId
+  await conversationsStore.getConversationMessages(conversationId)
+}
+
+const goBackToList = () => {
+  activeChatId.value = null
+}
+
+const selectConversationFromQuery = async () => {
+  const conversationIdQuery = route.query.conversationId
+  const targetConversationId = Number(conversationIdQuery)
+
+  if (!Number.isFinite(targetConversationId) || targetConversationId <= 0) {
+    return false
+  }
+
+  activeChatId.value = targetConversationId
+  await conversationsStore.getConversationMessages(targetConversationId)
+  return true
+}
 
 const loadConversations = async () => {
   try {
@@ -160,10 +187,25 @@ const loadConversations = async () => {
 }
 
 watch(conversations, (newConversations) => {
-  if (newConversations.length > 0 && activeChatId.value === null) {
-    activeChatId.value = newConversations[0].conversationId
-    conversationsStore.getConversationMessages(activeChatId.value)
+  if (route.query.conversationId) {
+    return
   }
+
+  if (smAndDown.value) {
+    return
+  }
+
+  if (newConversations.length > 0 && activeChatId.value === null) {
+    selectConversation(newConversations[0].conversationId)
+  }
+})
+
+watch(() => route.query.conversationId, async (newConversationId) => {
+  if (!newConversationId) {
+    return
+  }
+
+  await selectConversationFromQuery()
 })
 
 watch(currentPage, (newPage) => {
@@ -179,9 +221,14 @@ const sendMessage = () => {
   newMessage.value = ''
 }
 
-onMounted(() => {
+onMounted(async () => {
   limit.value = 7
   offset.value = 0
-  loadConversations()
+  await loadConversations()
+
+  const selectedFromQuery = await selectConversationFromQuery()
+  if (!selectedFromQuery && !smAndDown.value && conversations.value.length > 0 && activeChatId.value === null) {
+    await selectConversation(conversations.value[0].conversationId)
+  }
 })
 </script>

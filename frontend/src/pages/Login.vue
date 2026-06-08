@@ -90,16 +90,23 @@ watch(() => route.query.mode, () => {
 })
 
 const handleSubmit = async () => {
+  const authStore = useAuthStore()
+
   if (isLogin.value) {
-    await useAuthStore().login({ email: email.value, password: password.value })
-    if (useAuthStore().isAuthenticated && useAuthStore().companyId) {
+    await authStore.login({ email: email.value, password: password.value })
+
+    if (authStore.isAuthenticated && authStore.isSuperAdmin) {
+      router.push({ path: '/dashboard/admin' })
+    } else if (authStore.isAuthenticated && authStore.companyId) {
       router.push({ path: '/dashboard' })
-    }else if (useAuthStore().isAuthenticated) {
+    } else if (authStore.isAuthenticated) {
       router.push({ path: '/setup' })
     }
   } else {
-    await useAuthStore().register({ userName: name.value, email: email.value, password: password.value })
-    if (useAuthStore().isAuthenticated) {
+    await authStore.register({ userName: name.value, email: email.value, password: password.value })
+    if (authStore.isAuthenticated && authStore.isSuperAdmin) {
+      router.push({ path: '/dashboard/admin' })
+    } else if (authStore.isAuthenticated) {
       router.push({ path: '/setup' })
     }
   }

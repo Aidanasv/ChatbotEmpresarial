@@ -5,25 +5,7 @@
       <p class="text-medium-emphasis">Aquí tienes un resumen de la actividad de tu chatbot</p>
     </div>
 
-    <v-row class="mb-6">
-      <v-col cols="12" sm="6" md="3" v-for="(kpi, i) in kpis" :key="i">
-        <v-card class="pa-5 h-100 rounded-xl bg-surface" border elevation="0">
-          <div class="d-flex justify-space-between align-start mb-4">
-            <div class="text-primary">
-              <v-icon :icon="kpi.icon" size="large"></v-icon>
-            </div>
-            <span :class="['text-caption font-weight-bold d-flex align-center', kpi.trendUp ? 'text-success' : 'text-error']">
-              {{ kpi.trend }} <v-icon size="small" class="ml-1">{{ kpi.trendUp ? 'mdi-trending-up' : 'mdi-trending-down' }}</v-icon>
-            </span>
-          </div>
-          <div class="text-h4 font-weight-bold mb-1">
-            <v-progress-circular v-if="isLoading" indeterminate color="primary" size="24" width="3"></v-progress-circular>
-            <span v-else>{{ kpi.value }}</span>
-          </div>
-          <div class="text-caption text-medium-emphasis">{{ kpi.title }}</div>
-        </v-card>
-      </v-col>
-    </v-row>
+    <KpiCardsGrid :items="kpis" :is-loading="isLoading" row-class="mb-6" />
 
     <v-row>
       <v-col cols="12" md="12">
@@ -49,7 +31,7 @@
 
           <v-list v-else lines="two" class="pa-0 bg-transparent">
             <template v-for="(chat, i) in conversationPanelData" :key="i">
-              <v-list-item class="px-5 py-3">
+              <v-list-item class="px-5 py-3 v-card--link" @click="openConversation(chat.conversationId)">
                 <template v-slot:prepend>
                   <v-avatar color="primary" variant="tonal" size="40" class="mr-4 font-weight-bold">
                     {{ chat.customerName ? chat.customerName.charAt(0).toUpperCase() : 'C' }}
@@ -89,8 +71,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAnalyticsStore } from '@/stores/useAnalyticsStore'
+import { useRouter } from 'vue-router'
+import KpiCardsGrid, { type KpiCardItem } from '@/components/dashboard/KpiCardsGrid.vue'
 
 const analyticsStore = useAnalyticsStore()
+const router = useRouter()
 const { 
   totalConversations, 
   totalActiveUsers, 
@@ -101,7 +86,7 @@ const {
 
 const isLoading = ref(true)
 
-const kpis = computed(() => [
+const kpis = computed<KpiCardItem[]>(() => [
   { 
     title: 'Conversaciones Totales', 
     value: totalConversations.value ?? 0, 
@@ -131,6 +116,13 @@ const kpis = computed(() => [
     trendUp: true 
   }
 ])
+
+const openConversation = (conversationId: number) => {
+  router.push({
+    name: 'dashboard-conversations',
+    query: { conversationId: String(conversationId) }
+  })
+}
 
 onMounted(async () => {
   try {

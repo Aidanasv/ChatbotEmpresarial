@@ -1,0 +1,29 @@
+.status-selector-chip {
+  cursor: pointer;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.18);
+  transition: all 0.2s ease;
+}
+
+.status-selector-chip:hover {
+  border-color: rgba(var(--v-theme-on-surface), 0.35);
+  transform: translateY(-1px);
+}
+
+.status-selector-chip:focus-visible {
+  outline: 2px solid rgba(var(--v-theme-primary), 0.4);
+  outline-offset: 2px;
+}
+
+.status-label-prefix {
+  font-weight: 600;
+  opacity: 0.85;
+  margin-right: 6px;
+}
+
+.status-selector-arrow {
+  transition: transform 0.2s ease;
+}
+
+.status-selector-arrow--open {
+  transform: rotate(180deg);
+}

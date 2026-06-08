@@ -145,6 +145,32 @@ export const useSetupStore = defineStore('setup', {
                 console.error('Error fetching setup data:', error);
                 throw error;
             }
+        },
+
+        async getCurrentSubscription() {
+            try {
+                const response = await axios.get<{ subscriptionId: number }>('http://localhost:5267/api/setup/company/subscription', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.subscriptionId;
+            } catch (error) {
+                console.error('Error fetching current subscription:', error);
+                throw error;
+            }
+        },
+
+        async updateCompanySubscription(subscriptionId: number) {
+            try {
+                const response = await axios.patch<{ subscriptionId: number }>(`http://localhost:5267/api/setup/company/subscription/${subscriptionId}`, null, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.subscriptionId;
+            } catch (error) {
+                console.error('Error updating company subscription:', error);
+                throw error;
+            }
         }
     }
 })

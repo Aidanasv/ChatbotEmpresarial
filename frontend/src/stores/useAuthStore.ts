@@ -3,6 +3,8 @@ import { defineStore } from "pinia";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 
+type DecodedJwt = Record<string, string | undefined>
+
 export const useAuthStore = defineStore("auth", {
     state: (): AuthState => ({
         userId: localStorage.getItem("userId") || null,
@@ -14,6 +16,7 @@ export const useAuthStore = defineStore("auth", {
 
     getters: {
         isAuthenticated: (state) => !!state.userId,
+        isSuperAdmin: (state) => (state.role || "").toLowerCase() === "superadmin",
     },
     actions: {
         async register(userAuth: RegisterAuth) {
@@ -34,14 +37,14 @@ export const useAuthStore = defineStore("auth", {
             }
         },
 
-       async processingToken(token: string) {
-            const decodedToken = jwtDecode<AuthState>(token);
+        async processingToken(token: string) {
+            const decodedToken = jwtDecode<DecodedJwt>(token);
             console.log("Decoded Token:", decodedToken);
-            this.userId = decodedToken.userId;
-            this.email = decodedToken.email;
-            this.role = decodedToken.role;
-            this.companyId = decodedToken.companyId;
-            this.chatbotId = decodedToken.chatbotId;
+            this.userId = decodedToken.userId || null;
+            this.email = decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || null;
+            this.role = decodedToken.role || decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || null;
+            this.companyId = decodedToken.companyId || null;
+            this.chatbotId = decodedToken.chatbotId || null;
             localStorage.setItem("token", token);
             localStorage.setItem("userId", this.userId || "");
             localStorage.setItem("email", this.email || "");

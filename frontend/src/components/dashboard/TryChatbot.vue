@@ -17,7 +17,8 @@
                         <v-icon start size="small">mdi-star-four-points-circle-outline</v-icon>
                         gpt-4o-mini
                     </v-chip>
-                    <v-btn variant="outlined" rounded="lg" class="text-none" prepend-icon="mdi-refresh" @click="resetChat">
+                    <v-btn variant="outlined" rounded="lg" class="text-none" prepend-icon="mdi-refresh"
+                        @click="resetChat">
                         Reiniciar
                     </v-btn>
                 </div>
@@ -27,36 +28,18 @@
             <div v-if="!hasConversation" class="pa-6">
                 <v-card variant="outlined" class="pa-5 rounded-lg" max-width="640">
                     <h3 class="text-subtitle-1 font-weight-bold mb-1">Datos del cliente</h3>
-                    <p class="text-body-2 text-medium-emphasis mb-4">Completa estos datos para iniciar la conversacion de prueba.</p>
+                    <p class="text-body-2 text-medium-emphasis mb-4">Completa estos datos para iniciar la conversacion
+                        de prueba.</p>
 
                     <v-form @submit.prevent="startConversation">
-                        <v-text-field
-                            v-model="customerForm.name"
-                            label="Nombre"
-                            variant="outlined"
-                            class="mb-3"
-                            :rules="nameRules"
-                            required
-                        ></v-text-field>
+                        <v-text-field v-model="customerForm.name" label="Nombre" variant="outlined" class="mb-3"
+                            :rules="nameRules" required></v-text-field>
 
-                        <v-text-field
-                            v-model="customerForm.email"
-                            label="Correo"
-                            type="email"
-                            variant="outlined"
-                            class="mb-3"
-                            :rules="emailRules"
-                            required
-                        ></v-text-field>
+                        <v-text-field v-model="customerForm.email" label="Correo" type="email" variant="outlined"
+                            class="mb-3" :rules="emailRules" required></v-text-field>
 
-                        <v-text-field
-                            v-model="customerForm.phone"
-                            label="Telefono"
-                            variant="outlined"
-                            class="mb-4"
-                            :rules="phoneRules"
-                            required
-                        ></v-text-field>
+                        <v-text-field v-model="customerForm.phone" label="Telefono" variant="outlined" class="mb-4"
+                            :rules="phoneRules" required></v-text-field>
 
                         <div class="d-flex justify-end">
                             <v-btn type="submit" color="primary" class="text-none" :loading="chatbotStore.isLoading">
@@ -68,14 +51,16 @@
             </div>
 
             <template v-else>
-                <v-sheet class="pa-6 bg-grey-lighten-5 overflow-y-auto" min-height="420" max-height="calc(100vh - 280px)">
+                <v-sheet class="pa-6 bg-grey-lighten-5 overflow-y-auto" min-height="420"
+                    max-height="calc(100vh - 280px)">
                     <div v-for="message in messages" :key="message.id" class="mb-4">
                         <div v-if="message.role === 'bot'" class="d-flex align-start">
                             <v-avatar size="34" color="primary" variant="tonal" class="mr-3 mt-1">
                                 <v-icon size="18">mdi-robot-outline</v-icon>
                             </v-avatar>
                             <div>
-                                <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2" border color="white" style="max-width: min(680px, 80vw); line-height: 1.45;">
+                                <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2" border color="white"
+                                    style="max-width: min(680px, 80vw); line-height: 1.45;">
                                     {{ message.content }}
                                 </v-sheet>
                                 <div class="text-caption text-medium-emphasis mt-1">{{ message.time }}</div>
@@ -84,7 +69,8 @@
 
                         <div v-else class="d-flex justify-end">
                             <div class="text-right">
-                                <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white" color="primary" style="max-width: min(680px, 80vw); line-height: 1.45;">
+                                <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white"
+                                    color="primary" style="max-width: min(680px, 80vw); line-height: 1.45;">
                                     {{ message.content }}
                                 </v-sheet>
                                 <div class="text-caption text-medium-emphasis mt-1">{{ message.time }}</div>
@@ -95,25 +81,13 @@
 
                 <v-divider></v-divider>
                 <div class="pa-4">
-                    <v-text-field
-                        v-model="inputMessage"
-                        variant="outlined"
-                        placeholder="Escribe un mensaje para probar tu chatbot..."
-                        hide-details
-                        bg-color="white"
-                        class="try-input"
-                        @keyup.enter="sendMessage"
-                    >
+                    <v-text-field v-model="inputMessage" variant="outlined"
+                        placeholder="Escribe un mensaje para probar tu chatbot..." hide-details bg-color="white"
+                        class="try-input" @keyup.enter="sendMessage">
                         <template #append-inner>
-                            <v-btn
-                                icon="mdi-send"
-                                color="primary"
-                                size="small"
-                                variant="flat"
+                            <v-btn icon="mdi-send" color="primary" size="small" variant="flat"
                                 :disabled="!inputMessage.trim() || chatbotStore.isLoading"
-                                :loading="chatbotStore.isLoading"
-                                @click="sendMessage"
-                            ></v-btn>
+                                :loading="chatbotStore.isLoading" @click="sendMessage"></v-btn>
                         </template>
                     </v-text-field>
                 </div>
@@ -187,7 +161,7 @@ const sendMessage = async () => {
     chatbotStore.conversations.push({ id: Date.now(), role: 'user', content: trimmed, time: getTimeLabel() })
     inputMessage.value = ''
     await chatbotStore.sendMenssage(trimmed)
-    
+
 }
 
 const resetChat = () => {

@@ -26,11 +26,12 @@ namespace backend.Controllers
             var companyId = GetCompanyIdFromToken();
             if (companyId == null) return Unauthorized();
 
-
             var totalConversations = _context.Conversations.Include(c => c.ChatbotSettings)
                 .Where(c => c.ChatbotSettings != null && c.ChatbotSettings.CompanyId == companyId)
                 .Count();
+
             var fifteenMinutesAgo = DateTime.UtcNow.AddMinutes(-15);
+
             var totalActiveUsers = _context.Conversations
             .Include(c => c.ChatbotSettings)
             .Where(c => c.ChatbotSettings != null && c.ChatbotSettings.CompanyId == companyId)
@@ -40,10 +41,12 @@ namespace backend.Controllers
              .Select(m => m.CreatedAt)
              .FirstOrDefault() >= fifteenMinutesAgo)
              .Count();
+
             var averageMessagesByConversation = _context.Conversations
             .Where(c => c.ChatbotSettings != null && c.ChatbotSettings.CompanyId == companyId)
             .Select(c => (double?)c.Messages.Count)
             .Average() ?? 0.0;
+
             var averageResponseTime = _context.Messages
             .Where(m => m.Conversation.ChatbotSettings != null && m.Conversation.ChatbotSettings.CompanyId == companyId)
             .Where(m => m.Role == RoleInConversation.User)
@@ -64,6 +67,77 @@ namespace backend.Controllers
             };
 
             return Ok(analytics);
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpGet("SuperAdminAnalytics")]
+        public IActionResult GetSuperAdminAnalytics()
+        {
+            var totalConversationsCurrentlyMonth = _context.Conversations
+                .Where(c => c.CreatedAt.Month == DateTime.UtcNow.Month && c.CreatedAt.Year == DateTime.UtcNow.Year)
+                .Count();
+
+            var MRR = _context.Companies.Include(c => c.Subscription).Sum(c => c.Subscription != null ? c.Subscription.Price : 0);
+
+            var analytics = new AnalyticsSuperAdminDTO
+            {
+                TotalCompanies = _context.Companies.Count(),
+                TotalUsers = _context.Users.Count(),
+                TotalConversations = totalConversationsCurrentlyMonth,
+                MRR = (double)MRR
+            };
+
+            return Ok(analytics);
+        }
+
+        [Authorize(Roles = "SuperAdmin")]
+        [HttpGet("companies")]
+        public async Task<IActionResult> GetCompanies(int limit = 5, int offset = 0)
+        {
+            var companiesRaw = await _context.Companies
+                .OrderByDescending(c => c.CreatedAt)
+                .Skip(offset)
+                .Take(limit)
+                .Select(c => new
+                {
+                    c.Id,
+                    c.Name,
+                    c.Email,
+                    SubscriptionName = c.Subscription != null ? c.Subscription.Name : null,
+                    SubscriptionPrice = c.Subscription != null ? (decimal?)c.Subscription.Price : null,
+                    UsersCount = c.Users.Count,
+                    // Contamos de forma segura por si una empresa no tiene ChatbotSettings
+                    ConversationsCount = c.ChatbotSettings != null ? c.ChatbotSettings.Conversations.Count() : 0,
+                    Status = c.Status,
+                    c.CreatedAt
+                })
+                .ToListAsync();
+
+            var companyData = companiesRaw.Select(c => new CompanyAnalyticsDTO
+            {
+                CompanyId = c.Id,
+                Initials = GetInitials(c.Name),
+                CompanyName = c.Name,
+                CompanyEmail = c.Email,
+                CompanySubscription = c.SubscriptionName ?? "N/A",
+                Users = c.UsersCount,
+                Conversations = c.ConversationsCount,
+                MRR = (double?)(c.SubscriptionPrice ?? 0.0m) ?? 0.0,
+                Status = c.Status.ToString(),
+                CreatedAt = c.CreatedAt.ToString("g")
+            }).ToList();
+
+            return Ok(companyData);
+        }
+
+        private string GetInitials(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name)) return "N/A";
+
+            var words = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var initials = words.Select(w => w[0]).ToArray();
+
+            return new string(initials).ToUpper();
         }
 
         [Authorize(Roles = "Admin")]
