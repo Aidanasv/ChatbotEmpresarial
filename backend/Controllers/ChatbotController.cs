@@ -183,6 +183,7 @@ namespace backend.Controllers
                 }
             });
             prompt += $"IMPORTANTE: si el usuario te pregunta sobre la empresa, productos o servicios, busca en esta url: {company?.Website}";
+            prompt += "NOTA: no coloques las referencias de los documentos recuperados en la respuesta, solo úsalos para generar la respuesta correcta.";
 
             var generationRaw = await ragClient.GenerateContentAsync(
                 projectId,

@@ -18,7 +18,7 @@
       </v-alert>
 
       <v-alert v-else-if="documentUploadLimit !== null" type="info" variant="tonal" class="ml-md-10 mb-6">
-        <span v-if="hasFiniteDocumentLimit && remainingDocumentSlots > 0">
+        <span v-if="hasFiniteDocumentLimit && remainingDocumentSlotsValue > 0">
           Puedes subir hasta {{ documentUploadLimit }} documentos. Te quedan {{ remainingDocumentSlots }} cupos.
         </span>
         <span v-else>
@@ -37,7 +37,7 @@
           bg-color="grey-lighten-5"
           class="rounded-lg"
           show-size
-          :disabled="!canUploadDocuments || remainingDocumentSlots === 0"
+          :disabled="!canAddMoreDocuments"
           @update:model-value="handleFileSelect"
         ></v-file-input>
 
@@ -190,22 +190,36 @@ const documents = computed(() => props.modelValue.documents)
 const canUploadDocuments = computed(() => props.canUploadDocuments ?? true)
 const hasFiniteDocumentLimit = computed(() => props.documentUploadLimit !== null && props.documentUploadLimit !== undefined)
 const remainingDocumentSlots = computed(() => {
-  if (props.documentUploadLimit === null || props.documentUploadLimit === undefined) {
-    return 0
+  if (!hasFiniteDocumentLimit.value) {
+    return null
   }
 
-  return Math.max(props.documentUploadLimit - documents.value.length, 0)
+  return Math.max((props.documentUploadLimit as number) - documents.value.length, 0)
+})
+
+const remainingDocumentSlotsValue = computed(() => remainingDocumentSlots.value ?? 0)
+
+const canAddMoreDocuments = computed(() => {
+  if (!canUploadDocuments.value) {
+    return false
+  }
+
+  if (!hasFiniteDocumentLimit.value) {
+    return true
+  }
+
+  return remainingDocumentSlotsValue.value > 0
 })
 
 const handleFileSelect = (files: File | File[] | null) => {
   if (!canUploadDocuments.value) return
-  if (remainingDocumentSlots.value === 0) return
+  if (!canAddMoreDocuments.value) return
 
   if (!files) return
   const fileArray = Array.isArray(files) ? files : [files]
   if (fileArray.length === 0) return
 
-  if (remainingDocumentSlots.value !== null && fileArray.length > remainingDocumentSlots.value) {
+  if (hasFiniteDocumentLimit.value && fileArray.length > remainingDocumentSlotsValue.value) {
     return
   }
 
