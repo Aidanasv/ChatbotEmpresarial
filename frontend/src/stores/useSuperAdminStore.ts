@@ -5,6 +5,8 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import { useUiStore } from "./useUiStore";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://chatbotempresarial-1067165831463.europe-west1.run.app";
+
 export const useSuperAdminStore = defineStore('superAdmin', {
     state: (): SuperAdminAnalyticsState => ({
         totalCompanies: 0,
@@ -23,7 +25,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
     actions: {
         async getAnalyticsData() {
             try {
-                const response = await axios.get('http://localhost:5267/api/analytics/superadminanalytics', {
+                const response = await axios.get(`${API_BASE_URL}/api/analytics/superadminanalytics`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 })
                 const data = response.data;
@@ -45,7 +47,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
                 const page = query.page ?? this.companyPanelPage;
                 const pageSize = query.pageSize ?? this.companyPanelPageSize;
 
-                const response = await axios.get<CompaniesPanelResponse>('http://localhost:5267/api/analytics/companies', {
+                const response = await axios.get<CompaniesPanelResponse>(`${API_BASE_URL}/api/analytics/companies`, {
                     params: {
                         search: query.search ?? '',
                         status: query.status ?? 'Todas',
@@ -73,7 +75,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
         },
         async updateCompanyStatus(companyId: number, status: CompanyLifecycleStatus) {
             try {
-                await axios.patch(`http://localhost:5267/api/setup/company/${companyId}/status`,
+                await axios.patch(`${API_BASE_URL}/api/setup/company/${companyId}/status`,
                     { status },
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
@@ -94,7 +96,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
         },
         async getSubscriptions() {
             try {
-                const response = await axios.get<SubscriptionPlan[]>("http://localhost:5267/api/subscriptions", {
+                const response = await axios.get<SubscriptionPlan[]>(`${API_BASE_URL}/api/subscriptions`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 
@@ -111,7 +113,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
         },
         async createSubscription(payload: UpsertSubscriptionPayload) {
             try {
-                const response = await axios.post<SubscriptionPlan>("http://localhost:5267/api/subscriptions", payload, {
+                const response = await axios.post<SubscriptionPlan>(`${API_BASE_URL}/api/subscriptions`, payload, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 
@@ -130,7 +132,7 @@ export const useSuperAdminStore = defineStore('superAdmin', {
         },
         async updateSubscription(subscriptionId: number, payload: UpsertSubscriptionPayload) {
             try {
-                const response = await axios.put<SubscriptionPlan>(`http://localhost:5267/api/subscriptions/${subscriptionId}`, payload, {
+                const response = await axios.put<SubscriptionPlan>(`${API_BASE_URL}/api/subscriptions/${subscriptionId}`, payload, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 

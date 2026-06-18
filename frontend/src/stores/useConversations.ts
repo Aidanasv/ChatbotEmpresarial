@@ -4,6 +4,8 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import { useUiStore } from "./useUiStore";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://chatbotempresarial-1067165831463.europe-west1.run.app";
+
 export const useConversationsStore = defineStore('conversations', {
     state: (): ConversationState => ({
         conversations: [],
@@ -14,7 +16,7 @@ export const useConversationsStore = defineStore('conversations', {
     actions: {
         async getConversationData(limit: number = 5, offset: number = 0) {
             try {
-                const response = await axios.get<ConversationPanelData[]>(`http://localhost:5267/api/analytics/conversations?limit=${limit}&offset=${offset}`, {
+                const response = await axios.get<ConversationPanelData[]>(`${API_BASE_URL}/api/analytics/conversations?limit=${limit}&offset=${offset}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data: ConversationPanelData[] = response.data;
@@ -32,7 +34,7 @@ export const useConversationsStore = defineStore('conversations', {
         },
         async getConversationMessages(conversationId: number) {
             try {
-                const response = await axios.get<ConversationMessage>(`http://localhost:5267/api/analytics/conversationsById/${conversationId}`, {
+                const response = await axios.get<ConversationMessage>(`${API_BASE_URL}/api/analytics/conversationsById/${conversationId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 const data: ConversationMessage = response.data;

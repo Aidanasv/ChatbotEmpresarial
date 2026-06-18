@@ -3,6 +3,8 @@ import axios from "axios";
 import type { ChatbotResponse, ChatbotState, Conversation, ConversationResponse } from "@/types/chatbot";
 import { useUiStore } from "./useUiStore";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://chatbotempresarial-1067165831463.europe-west1.run.app";
+
 export const useChatBotStore = defineStore("chatbot", {
     state: (): ChatbotState => ({
         conversations: [
@@ -23,7 +25,7 @@ export const useChatBotStore = defineStore("chatbot", {
         async initializeChatbot(conversation: Conversation) {
             try {
                 this.isLoading = true;
-                const response = await axios.post<ConversationResponse>("http://localhost:5267/api/chatbot/start-conversation", conversation);
+                const response = await axios.post<ConversationResponse>(`${API_BASE_URL}/api/chatbot/start-conversation`, conversation);
                 this.conversationId = response.data.conversationId;
             } catch (error) {
                 this.error = error as Error;
@@ -40,7 +42,7 @@ export const useChatBotStore = defineStore("chatbot", {
         async sendMenssage(message: string) {
             try {
                 this.isLoading = true;
-                const response = await axios.post<ChatbotResponse>("http://localhost:5267/api/chatbot/chat", { message, conversationId: this.conversationId });
+                const response = await axios.post<ChatbotResponse>(`${API_BASE_URL}/api/chatbot/chat`, { message, conversationId: this.conversationId });
                 this.conversations.push({ id: Date.now(), role: "bot", content: response.data.response, time: this.getTimeLabel() });
             } catch (error) {
                 this.error = error as Error;

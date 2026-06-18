@@ -14,7 +14,7 @@ import { jwtDecode } from "jwt-decode";
 import { useUiStore } from "./useUiStore";
 
 type DecodedJwt = Record<string, string | number | undefined>
-const AUTH_API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5267"}/api/auth`;
+const AUTH_API_BASE_URL = `${import.meta.env.VITE_API_URL || "https://chatbotempresarial-1067165831463.europe-west1.run.app"}/api/auth`;
 
 const AUTH_STORAGE_KEYS = ["token", "userId", "email", "role", "companyId", "chatbotId"] as const;
 
