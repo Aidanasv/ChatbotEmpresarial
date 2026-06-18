@@ -170,7 +170,6 @@ const handleFileSelect = (files: File | File[] | null) => {
   const fileArray = Array.isArray(files) ? files : [files]
   if (fileArray.length === 0) return
 
-  // Generamos ids temporales para relacionar cada item visual con su archivo binario pendiente
   const pendingEntries = fileArray.map(file => ({
     tempId: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     file
@@ -179,7 +178,6 @@ const handleFileSelect = (files: File | File[] | null) => {
   rawFilesList.value = [...rawFilesList.value, ...pendingEntries]
   emit('update:pending-files', rawFilesList.value.map(item => item.file))
 
-  // Mapeamos para la lista visual del componente
   const newDocs = pendingEntries.map(({ file, tempId }) => ({
     name: file.name,
     id: tempId,
@@ -199,11 +197,9 @@ const removeDocument = (index: number) => {
   const updatedDocs = documents.value.filter((_, i) => i !== index)
 
   if (docToRemove?.id?.startsWith('tmp-')) {
-    // Nuevo documento no guardado: eliminar del buffer de archivos
     rawFilesList.value = rawFilesList.value.filter(entry => entry.tempId !== docToRemove.id)
     emit('update:pending-files', rawFilesList.value.map(item => item.file))
   } else if (docToRemove?.id && !docToRemove.id.startsWith('tmp-')) {
-    // Documento existente: registrar para borrar del corpus
     if (!deletedDocumentIds.value.includes(docToRemove.id)) {
       deletedDocumentIds.value.push(docToRemove.id)
     }

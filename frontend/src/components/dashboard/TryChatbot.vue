@@ -1,7 +1,7 @@
 <template>
     <v-container fluid class="pa-6 pa-md-8 min-vh-100">
         <!-- Header -->
-        <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-8 pa-6 rounded-xl" 
+        <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-8 pa-6 rounded-xl"
             style="background: linear-gradient(135deg, rgba(83, 109, 254, 0.08) 0%, rgba(25, 118, 210, 0.08) 100%); border: 1px solid rgba(var(--v-theme-primary), 0.1);">
             <div class="d-flex align-center ga-4">
                 <v-avatar color="primary" variant="tonal" size="56">
@@ -32,7 +32,8 @@
                     </div>
 
                     <div class="pa-4" style="background: #0f172a; color: #e2e8f0; overflow-x: auto;">
-                        <pre style="margin: 0; white-space: pre; font-size: 11px; line-height: 1.45;"><code>{{ embedSnippet }}</code></pre>
+                        <pre
+                            style="margin: 0; white-space: pre; font-size: 11px; line-height: 1.45;"><code>{{ embedSnippet }}</code></pre>
                     </div>
                 </v-card>
             </v-col>
@@ -43,37 +44,25 @@
                         <v-card rounded="xl" class="pa-8" elevation="2">
                             <div class="mb-8">
                                 <h2 class="text-h5 font-weight-bold mb-2">Datos del cliente</h2>
-                                <p class="text-body-2 text-medium-emphasis mb-0">Completa estos datos para iniciar la conversacion de prueba</p>
+                                <p class="text-body-2 text-medium-emphasis mb-0">Completa estos datos para iniciar la
+                                    conversacion de prueba</p>
                             </div>
 
                             <v-form @submit.prevent="startConversation" class="d-flex flex-column ga-4">
-                                <v-text-field 
-                                    v-model="customerForm.name" 
-                                    label="Nombre" 
-                                    variant="outlined" 
-                                    :rules="nameRules" 
-                                    required>
+                                <v-text-field v-model="customerForm.name" label="Nombre" variant="outlined"
+                                    :rules="nameRules" required>
                                 </v-text-field>
 
-                                <v-text-field 
-                                    v-model="customerForm.email" 
-                                    label="Correo electronico" 
-                                    type="email" 
-                                    variant="outlined" 
-                                    :rules="emailRules" 
-                                    required>
+                                <v-text-field v-model="customerForm.email" label="Correo electronico" type="email"
+                                    variant="outlined" :rules="emailRules" required>
                                 </v-text-field>
 
-                                <v-text-field 
-                                    v-model="customerForm.phone" 
-                                    label="Telefono" 
-                                    variant="outlined" 
-                                    :rules="phoneRules" 
-                                    required>
+                                <v-text-field v-model="customerForm.phone" label="Telefono" variant="outlined"
+                                    :rules="phoneRules" required>
                                 </v-text-field>
 
                                 <div class="d-flex justify-end pt-4">
-                                    <v-btn type="submit" color="primary" size="large" rounded="lg" 
+                                    <v-btn type="submit" color="primary" size="large" rounded="lg"
                                         :loading="chatbotStore.isLoading" class="text-none font-weight-bold px-8">
                                         Iniciar conversacion
                                     </v-btn>
@@ -84,11 +73,8 @@
 
                     <template v-else>
                         <div class="d-flex justify-center align-start" style="width: 100%;">
-                            <WidgetChatbot 
-                                :model-value="modelValue" 
-                                :messages="messages" 
-                                :onSendMessage="sendMessage" 
-                            />
+                            <WidgetChatbot :model-value="modelValue" :messages="messages"
+                                :onSendMessage="sendMessage" />
                         </div>
                     </template>
                 </div>

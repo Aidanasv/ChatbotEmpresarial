@@ -2,7 +2,8 @@
   <v-container fluid class="pa-0 v-window-item--active chat-view-container dashboard-full-height">
     <v-row no-gutters class="h-100">
 
-      <v-col v-if="!smAndDown || activeChatId === null" cols="12" md="4" lg="5" class="d-flex flex-column border-e h-100 bg-surface">
+      <v-col v-if="!smAndDown || activeChatId === null" cols="12" md="4" lg="5"
+        class="d-flex flex-column border-e h-100 bg-surface">
         <div class="pa-4 border-b">
           <h2 class="text-h6 font-weight-bold mb-4">Bandeja de entrada</h2>
           <v-text-field density="compact" variant="outlined" prepend-inner-icon="mdi-magnify"
@@ -23,8 +24,7 @@
           <v-list lines="two" class="flex-grow-1 overflow-y-auto pa-0 bg-transparent">
             <template v-for="(chat, index) in conversations" :key="chat.conversationId">
               <v-list-item :value="chat.conversationId" :active="activeChatId === chat.conversationId"
-                @click="selectConversation(chat.conversationId)"
-                class="px-4 py-3 v-card--link" active-color="primary">
+                @click="selectConversation(chat.conversationId)" class="px-4 py-3 v-card--link" active-color="primary">
                 <template v-slot:prepend>
                   <v-avatar
                     :color="chat.status === 'Resolved' || chat.status === 'Resuelto' ? 'grey-lighten-2' : 'primary'"
@@ -54,33 +54,34 @@
         </template>
       </v-col>
 
-      <v-col v-if="!smAndDown || activeChatId !== null" cols="12" md="8" lg="7" class="d-flex flex-column bg-grey-lighten-5 h-100">
+      <v-col v-if="!smAndDown || activeChatId !== null" cols="12" md="8" lg="7"
+        class="d-flex flex-column bg-grey-lighten-5 h-100">
 
         <template v-if="conversationMessage">
           <div class="pa-4 bg-white border-b d-flex align-center justify-space-between flex-shrink-0">
             <div class="d-flex align-center">
-              <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" size="small" class="mr-2" @click="goBackToList"></v-btn>
+              <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" size="small" class="mr-2"
+                @click="goBackToList"></v-btn>
               <v-avatar color="primary" variant="tonal" class="mr-3 font-weight-bold">
                 {{ conversationMessage.customerName ? conversationMessage.customerName.charAt(0).toUpperCase() : 'C' }}
               </v-avatar>
               <div>
                 <div class="font-weight-bold text-body-1">{{ conversationMessage.customerName || 'Cliente Anónimo' }}
                 </div>
-                <v-chip
-                  size="small"
-                  variant="tonal"
-                  class="mt-1"
-                  :color="conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'success' : 'grey'"
-                >
-                  {{ conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'Abierta' : 'Cerrada' }}
+                <v-chip size="small" variant="tonal" class="mt-1"
+                  :color="conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'success' : 'grey'">
+                  {{ conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'Abierta' :
+                  'Cerrada' }}
                 </v-chip>
-    
-              
-                <div v-if="conversationMessage.customerEmail" class="text-caption text-medium-emphasis d-flex align-center mt-1">
+
+
+                <div v-if="conversationMessage.customerEmail"
+                  class="text-caption text-medium-emphasis d-flex align-center mt-1">
                   <v-icon size="x-small" class="mr-1">mdi-email-outline</v-icon>
                   {{ conversationMessage.customerEmail }}
                 </div>
-                <div v-if="conversationMessage.customerPhone" class="text-caption text-medium-emphasis d-flex align-center">
+                <div v-if="conversationMessage.customerPhone"
+                  class="text-caption text-medium-emphasis d-flex align-center">
                   <v-icon size="x-small" class="mr-1">mdi-phone-outline</v-icon>
                   {{ conversationMessage.customerPhone }}
                 </div>
@@ -91,9 +92,11 @@
           <div class="flex-grow-1 overflow-y-auto pa-4 pa-md-6 d-flex flex-column dashboard-chat-thread">
             <div v-for="message in conversationMessage.messages" :key="message.id" class="mb-4">
               <div v-if="isBotMessage(message.role)" class="d-flex align-start">
-            
+
                 <div>
-                  <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2 dashboard-chat-bubble dashboard-chat-bubble--bot" border color="white">
+                  <v-sheet
+                    class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2 dashboard-chat-bubble dashboard-chat-bubble--bot"
+                    border color="white">
                     <div v-html="renderBotMessage(message.content)"></div>
                   </v-sheet>
                   <div class="text-caption text-medium-emphasis mt-1">{{ formatTime(message.createdAt) }}</div>
@@ -102,7 +105,9 @@
 
               <div v-else class="d-flex justify-end">
                 <div class="text-right">
-                  <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white dashboard-chat-bubble dashboard-chat-bubble--user" color="primary">
+                  <v-sheet
+                    class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white dashboard-chat-bubble dashboard-chat-bubble--user"
+                    color="primary">
                     {{ message.content }}
                   </v-sheet>
                   <div class="text-caption text-medium-emphasis mt-1">{{ formatTime(message.createdAt) }}</div>
