@@ -89,7 +89,7 @@ const customerForm = ref({
 })
 
 const embedChatbotId = computed(() => authStore.chatbotId ?? '18')
-const embedUrl = computed(() => `http://localhost:3000/my-chatbot/${embedChatbotId.value}`)
+const embedUrl = computed(() => `${window.location.origin}/my-chatbot/${embedChatbotId.value}`)
 const embedSnippet = computed(() => `.widget-frame {
     inset: 0;
     width: 100vw;
