@@ -1,9 +1,46 @@
 @use '../base/variables' as *;
 
+.relative-wrapper {
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+    width: 100%;
+}
+
+.bg-blur-glow-1 {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.04) 0%, transparent 70%);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.bg-blur-glow-2 {
+    position: absolute;
+    bottom: -50px;
+    right: -50px;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(var(--v-theme-secondary), 0.03) 0%, transparent 70%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+}
+
 .hero-container {
-    min-height: 70vh;
+    min-height: 58vh;
     display: flex;
     align-items: center;
+    position: relative;
+    overflow-x: clip;
+    z-index: 1;
 
     .hero-chip {
         color: rgb(var(--v-theme-primary));
@@ -12,32 +49,31 @@
     .hero-title {
         line-height: 1.2;
         font-weight: $font-weight-black;
-
-        .brand-highlight {
-            color: rgb(var(--v-theme-primary));
-        }
     }
 
     .hero-description {
         line-height: 1.6;
     }
+}
 
-    .hero-illustration-box {
-        background-color: rgb(var(--v-theme-surface-dark));
-
-        .robot-icon {
-            color: rgba(255, 255, 255, 0.1);
-        }
-
-        .illustration-text {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.9rem;
-        }
+@media (max-width: 959px) {
+    .hero-container {
+        min-height: auto;
     }
 }
 
-.features-section {
+.brand-highlight {
+    background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 0%, #00b4d8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
 
+.benefits-list {
+    gap: 8px;
+}
+
+.features-section {
     .v-avatar.icon-box {
         background-color: rgba(var(--v-theme-primary), 0.1);
 

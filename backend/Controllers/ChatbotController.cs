@@ -289,7 +289,6 @@ namespace backend.Controllers
                 return false;
             }
 
-            // Si la URL permitida define puerto explicito, se exige coincidencia exacta.
             if (!allowedUri.IsDefaultPort && requestUri.Port != allowedUri.Port)
             {
                 return false;

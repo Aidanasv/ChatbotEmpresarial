@@ -6,6 +6,7 @@ import SetupView from '@/pages/Setup.vue'
 import DashboardView from '@/pages/Dashboard.vue'
 import AdminDashboardView from '@/pages/AdminDashboard.vue'
 import MyChatbotView from '@/pages/MyChatbot.vue'
+import ResetPasswordView from '@/pages/ResetPassword.vue'
 
 import Conversations from '@/components/dashboard/Conversations.vue'
 import Users from '@/components/dashboard/Users.vue'
@@ -32,6 +33,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginView
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPasswordView
     },
     {
       path: '/setup',
@@ -61,7 +67,7 @@ const router = createRouter({
         const setupStore = useSetupStore()
         if (authStore.companyId) {
           await setupStore.getSetupData(parseInt(authStore.companyId))
-        }else {
+        } else {
           return '/setup'
         }
       },

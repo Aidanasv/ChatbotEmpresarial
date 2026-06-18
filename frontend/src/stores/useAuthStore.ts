@@ -1,10 +1,20 @@
-import type { LoginAuth, UserAuthResponse, RegisterAuth, AuthState } from "@/types/userAuth";
+import type {
+    ApiMessageResponse,
+    AuthState,
+    ChangePasswordPayload,
+    ForgotPasswordPayload,
+    LoginAuth,
+    RegisterAuth,
+    ResetPasswordPayload,
+    UserAuthResponse
+} from "@/types/userAuth";
 import { defineStore, getActivePinia } from "pinia";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useUiStore } from "./useUiStore";
 
 type DecodedJwt = Record<string, string | number | undefined>
+const AUTH_API_BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5267"}/api/auth`;
 
 const AUTH_STORAGE_KEYS = ["token", "userId", "email", "role", "companyId", "chatbotId"] as const;
 
@@ -99,7 +109,7 @@ export const useAuthStore = defineStore("auth", {
 
         async register(userAuth: RegisterAuth) {
             try {
-                const response = await axios.post<UserAuthResponse>("http://localhost:5267/api/auth/register", userAuth);
+                const response = await axios.post<UserAuthResponse>(`${AUTH_API_BASE_URL}/register`, userAuth);
                 await this.processingToken(response.data.token || "");
                 useUiStore().showSuccess("¡Registro exitoso! Has iniciado sesión correctamente.", "Éxito", 2000);
             } catch (error) {
@@ -115,7 +125,7 @@ export const useAuthStore = defineStore("auth", {
 
         async login(userAuth: LoginAuth) {
             try {
-                const response = await axios.post<UserAuthResponse>("http://localhost:5267/api/auth/login", userAuth);
+                const response = await axios.post<UserAuthResponse>(`${AUTH_API_BASE_URL}/login`, userAuth);
                 await this.processingToken(response.data.token || "");
                 useUiStore().showSuccess("¡Inicio de sesión exitoso!", "Éxito", 2000);
             } catch (error) {
@@ -125,6 +135,59 @@ export const useAuthStore = defineStore("auth", {
                     3000
                 );
                 console.error("Error during login:", error);
+            }
+        },
+
+        async forgotPassword(payload: ForgotPasswordPayload) {
+            try {
+                const response = await axios.post<ApiMessageResponse>(`${AUTH_API_BASE_URL}/forgot-password`, payload);
+                useUiStore().showSuccess(response.data.message, "Correo enviado", 3000);
+                return true;
+            } catch (error) {
+                useUiStore().showError(
+                    'No se pudo iniciar la recuperación de contraseña. Inténtalo de nuevo.',
+                    "Error de recuperación",
+                    3000
+                );
+                console.error("Error during forgot password:", error);
+                return false;
+            }
+        },
+
+        async resetPassword(payload: ResetPasswordPayload) {
+            try {
+                const response = await axios.post<ApiMessageResponse>(`${AUTH_API_BASE_URL}/reset-password`, payload);
+                useUiStore().showSuccess(response.data.message, "Contraseña actualizada", 3000);
+                return true;
+            } catch (error) {
+                useUiStore().showError(
+                    'No se pudo restablecer la contraseña. Verifica el enlace o solicita uno nuevo.',
+                    "Error de recuperación",
+                    3000
+                );
+                console.error("Error during reset password:", error);
+                return false;
+            }
+        },
+
+        async changePassword(payload: ChangePasswordPayload) {
+            try {
+                const token = localStorage.getItem("token");
+                const response = await axios.post<ApiMessageResponse>(`${AUTH_API_BASE_URL}/change-password`, payload, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                useUiStore().showSuccess(response.data.message, "Contraseña actualizada", 3000);
+                return true;
+            } catch (error) {
+                useUiStore().showError(
+                    'No se pudo cambiar la contraseña. Revisa tu contraseña actual e inténtalo de nuevo.',
+                    "Error al cambiar contraseña",
+                    3000
+                );
+                console.error("Error during change password:", error);
+                return false;
             }
         },
 

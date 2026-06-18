@@ -89,8 +89,6 @@
                     :messages="messages"
                     :onSendMessage="sendMessage"
                     :onClose="() => { isChatOpen = false }"
-                    min-height="min(100dvh - 24px, 640px)"
-                    min-width="min(100vw - 24px, 390px)"
                 />
             </div>
         </div>

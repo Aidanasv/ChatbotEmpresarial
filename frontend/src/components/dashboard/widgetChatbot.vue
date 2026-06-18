@@ -1,50 +1,52 @@
-    <template>
-        <v-container class="d-flex flex-column w-100 pa-0">
-            <v-card rounded="xl" class="d-flex flex-column w-100" elevation="4"
-                :class="modelValue.widgetPosition ? 'ml-auto' : 'mr-auto'"
-                :style="{ minHeight: props.minHeight ?? '400px', minWidth: props.minWidth ?? '150px' }">
+<template>
+    <div class="d-flex flex-column pa-0" :style="{ maxWidth: props.minWidth ?? '350px', width: '100%' }">
 
-                <div class="rounded-t-xl d-flex align-center ga-3 pa-3"
+        <v-responsive :aspect-ratio="9 / 16" class="w-100 rounded-xl elevation-4 overflow-hidden" maxHeight="600px"
+            :class="modelValue.widgetPosition ? 'ml-auto' : 'mr-auto'">
+            <v-card class="d-flex flex-column h-100" variant="flat" tile>
+
+                <div class="d-flex align-center ga-3 pa-3"
                     :style="{ backgroundColor: primaryColor, color: contrastColor }">
-                    <div v-if="modelValue.showChatbotAvatar"
-                        class="widget-avatar-icon d-flex align-center justify-center rounded-lg"
+                    <div v-if="modelValue.showChatbotAvatar" class="d-flex align-center justify-center rounded-lg"
                         style="background-color: rgba(255,255,255,0.25); width: 32px; height: 32px;">
                         <v-icon :color="contrastColor" size="18">mdi-message-text</v-icon>
                     </div>
+
                     <div>
                         <div class="text-body-2 font-weight-bold">{{ modelValue.title ?? 'Asistente' }}</div>
-                        <div class="text-caption" style="opacity: 0.7;">En línea</div>
                     </div>
 
                     <v-btn v-if="props.onClose" icon size="small" variant="flat" :color="contrastColor" class="ml-auto"
                         @click="props.onClose?.()">
                         <v-icon size="18">mdi-close</v-icon>
                     </v-btn>
-
                 </div>
 
-                <div class="pa-3 d-flex flex-column" style="gap: 8px;" justify-content="flex-start"
-                    :style="{ minHeight: 'calc(' + (props.minHeight ?? '400px') + ' - 120px)' }">
+                <v-card-text ref="chatHistory"
+                    class="pa-3 d-flex flex-column flex-grow-1 overflow-y-auto ga-2 bg-white">
                     <div v-for="msg in displayMessages" :key="msg.id" :class="[
                         'rounded-lg pa-2 text-caption d-flex flex-column',
-                        msg.role === 'user' ? 'align-self-end text-white' : 'align-self-start bg-grey-lighten-4'
-                    ]" :style="msg.role === 'user' ? { backgroundColor: primaryColor, color: contrastColor } : {}"
-                        style="max-width: 80%;">
-                        <div v-if="msg.role === 'bot'" v-html="md.render(msg.content)" class="chat-markdown"></div>
+                        msg.role === 'user' ? 'align-self-end text-white' : 'align-self-start bg-grey-lighten-4 text-grey-darken-4'
+                    ]" :style="[
+                msg.role === 'user' ? { backgroundColor: primaryColor, color: contrastColor } : {},
+                { maxWidth: '80%', wordBreak: 'break-word', minWidth: '60%' }
+            ]">
+                        <div v-if="msg.role === 'bot'" v-html="md.render(msg.content)"></div>
 
                         <span v-else>{{ msg.content }}</span>
 
-                        <span class="chat-timestamp mt-1">
+                        <span class="mt-1 align-self-end text-right opacity-70" style="font-size: 0.65rem;">
                             {{ msg.time }}
                         </span>
                     </div>
-                </div>
+                </v-card-text>
 
                 <v-divider></v-divider>
 
-                <div class="pa-4">
-                    <v-text-field v-model="inputMessage" variant="outlined" placeholder="Escribe un mensaje..."
-                        hide-details bg-color="white" class="try-input" @keyup.enter="handleSendMessage">
+                <div class="pa-4 bg-white">
+                    <v-text-field v-model="inputMessage" variant="outlined" rounded="xl"
+                        placeholder="Escribe un mensaje..." hide-details bg-color="white"
+                        @keyup.enter="handleSendMessage">
                         <template #append-inner>
                             <v-btn icon="mdi-send" :color="primaryColor" size="small" variant="flat"
                                 :disabled="!inputMessage.trim() || isLoading" :loading="isLoading"
@@ -53,20 +55,21 @@
                     </v-text-field>
                 </div>
             </v-card>
+        </v-responsive>
 
-            <br />
+        <br />
 
-            <v-btn v-if="!props.onSendMessage" icon size="large" :color="primaryColor" elevation="4"
-                :class="modelValue.widgetPosition ? 'ml-auto' : 'mr-auto'">
-                <v-icon :color="contrastColor">mdi-message-text</v-icon>
-            </v-btn>
+        <v-btn v-if="!props.onSendMessage" icon size="large" :color="primaryColor" elevation="4"
+            :class="modelValue.widgetPosition ? 'ml-auto' : 'mr-auto'">
+            <v-icon :color="contrastColor">mdi-message-text</v-icon>
+        </v-btn>
 
-        </v-container>
-    </template>
+    </div>
+</template>
 
 <script setup lang="ts">
 import MarkdownIt from 'markdown-it'
-import { computed, ref } from 'vue'
+import { computed, ref, watch, nextTick, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
 
 export interface Message {
@@ -77,7 +80,7 @@ export interface Message {
 }
 
 const md = new MarkdownIt({
-    html: true,
+    html: false,
     linkify: true,
     typographer: true
 })
@@ -94,14 +97,13 @@ const props = defineProps<{
     messages?: Message[];
     onSendMessage?: (message: string) => Promise<void> | void;
     onClose?: () => void;
-    minHeight?: string;
     minWidth?: string;
 }>()
 
 const isLoading = ref(false)
 const inputMessage = ref('')
 const theme = useTheme()
-
+const chatHistory = ref<any>(null)
 
 const getCurrentTime = () => {
     const now = new Date()
@@ -111,14 +113,29 @@ const getCurrentTime = () => {
 const defaultMessages: Message[] = [
     { id: 1, role: 'bot', content: '¡Hola! 👋 ¿En qué puedo ayudarte?', time: getCurrentTime() },
     { id: 2, role: 'user', content: 'Quiero saber los precios', time: getCurrentTime() },
-    { id: 3, role: 'bot', content: '¡Claro! Tenemos planes desde $29/mes. ¿Te cuento más?', time: getCurrentTime() }
+    { id: 3, role: 'bot', content: '¡Claro! Tenemos planes desde **$29/mes**. ¿Te cuento más?', time: getCurrentTime() }
 ]
 
 const displayMessages = computed(() => {
-    if (props.messages !== undefined) {
-        return props.messages
-    }
-    return defaultMessages
+    return props.messages !== undefined ? props.messages : defaultMessages
+})
+
+// FUNCIÓN DE SCROLL AUTOMÁTICO AL FINAL
+const scrollToBottom = () => {
+    nextTick(() => {
+        if (chatHistory.value) {
+            const element = chatHistory.value.$el || chatHistory.value
+            element.scrollTop = element.scrollHeight
+        }
+    })
+}
+
+watch(() => displayMessages.value, () => {
+    scrollToBottom()
+}, { deep: true })
+
+onMounted(() => {
+    scrollToBottom()
 })
 
 const handleSendMessage = async () => {
@@ -132,11 +149,9 @@ const handleSendMessage = async () => {
             inputMessage.value = ''
             await props.onSendMessage(text)
         } finally {
-
             isLoading.value = false
         }
     } else {
-        // Simulador visual
         isLoading.value = true
         setTimeout(() => {
             inputMessage.value = ''
@@ -163,7 +178,6 @@ const isTransparentColor = (color: string) => {
     const normalized = color.toLowerCase()
     return normalized === 'transparent'
         || normalized === 'rgba(0, 0, 0, 0)'
-        || normalized === 'rgba(0,0,0,0)'
         || normalized === '#00000000'
 }
 
@@ -178,7 +192,6 @@ const getContrastColor = (hexColor: string) => {
     const blue = parseInt(normalized.slice(4, 6), 16)
 
     const luminance = (0.299 * red) + (0.587 * green) + (0.114 * blue)
-
     return luminance > 186 ? '#111827' : '#FFFFFF'
 }
 </script>

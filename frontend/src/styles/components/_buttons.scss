@@ -1,0 +1,32 @@
+@use '../base/variables' as *;
+
+.v-btn {
+  font-family: $font-family-main !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  line-height: 1.1;
+
+  &:not(.v-btn--icon) {
+    border-radius: 12px !important;
+    min-height: 40px;
+  }
+
+  &.v-btn--size-large:not(.v-btn--icon) {
+    min-height: 44px;
+  }
+
+  &.v-btn--size-x-large:not(.v-btn--icon) {
+    min-height: 48px;
+  }
+
+  .v-btn__content {
+    font-weight: $font-weight-bold;
+    font-size: 0.95rem;
+  }
+}
+
+.v-btn.v-btn--variant-text .v-btn__content,
+.v-btn.v-btn--variant-outlined .v-btn__content,
+.v-btn.v-btn--variant-tonal .v-btn__content {
+  font-weight: 600;
+}

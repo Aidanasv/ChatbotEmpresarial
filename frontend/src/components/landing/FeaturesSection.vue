@@ -1,5 +1,5 @@
 <template>
-  <section class="features-section py-16">
+  <section class="features-section pt-6 pb-8">
     <v-container>
       <div class="text-center mb-16">
         <h2 class="text-h3 font-weight-bold mb-4 section-title">

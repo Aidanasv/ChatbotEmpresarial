@@ -1,22 +1,5 @@
 <template>
     <v-container fluid class="pa-6 pa-md-8 min-vh-100">
-        <!-- Header -->
-        <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-8 pa-6 rounded-xl"
-            style="background: linear-gradient(135deg, rgba(83, 109, 254, 0.08) 0%, rgba(25, 118, 210, 0.08) 100%); border: 1px solid rgba(var(--v-theme-primary), 0.1);">
-            <div class="d-flex align-center ga-4">
-                <v-avatar color="primary" variant="tonal" size="56">
-                    <v-icon size="28">mdi-robot-outline</v-icon>
-                </v-avatar>
-                <div>
-                    <h1 class="text-h4 font-weight-bold mb-1">Modo prueba</h1>
-                    <p class="text-body-2 text-medium-emphasis mb-0">Simula conversaciones con tu chatbot</p>
-                </div>
-            </div>
-            <v-btn variant="tonal" color="error" @click="resetChat" v-if="hasConversation" class="text-none">
-                <v-icon start>mdi-refresh</v-icon>
-                Reiniciar
-            </v-btn>
-        </div>
 
         <v-row class="ga-0" align="start">
             <v-col cols="12" md="4" class="pr-md-4">

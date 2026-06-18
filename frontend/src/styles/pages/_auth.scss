@@ -3,8 +3,12 @@
 .auth-container {
     background-color: rgba(var(--v-theme-on-surface), 0.02);
 
+    .auth-wrapper {
+        width: min(100%, 560px);
+    }
+
     .auth-card {
-        max-width: 480px;
+        max-width: 560px;
         width: 100%;
         border: 1px solid rgba(var(--v-border-color), 0.05);
     }
@@ -18,8 +22,13 @@
     }
 
     .auth-toggle {
+        gap: 8px;
         background-color: rgba(var(--v-theme-on-surface), 0.05);
         border: 1px solid rgba(var(--v-border-color), 0.05);
+
+        .v-btn {
+            min-width: 0;
+        }
 
         .v-btn.active-toggle {
             background-color: rgb(var(--v-theme-surface));
@@ -35,6 +44,16 @@
             text-transform: none;
             font-weight: 500;
             color: rgba(var(--v-theme-on-surface), 0.5);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .auth-wrapper {
+            width: 100%;
+        }
+
+        .auth-card {
+            max-width: 100%;
         }
     }
 

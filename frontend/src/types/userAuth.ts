@@ -4,9 +4,24 @@ export interface LoginAuth {
 }
 
 export interface RegisterAuth {
+  userName: string;
   email: string;
   password: string;
-  confirmPassword: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  token: string;
+  newPassword: string;
+}
+
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface UserAuthResponse {
@@ -14,6 +29,10 @@ export interface UserAuthResponse {
   userId?: number;
   email?: string;
   chatbotId?: number;
+}
+
+export interface ApiMessageResponse {
+  message: string;
 }
 
 export interface AuthState {

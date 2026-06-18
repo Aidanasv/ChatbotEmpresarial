@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-16 cta-container">
+  <v-container class="pt-8 pb-16 cta-container">
     <v-sheet rounded="xl" class="cta-banner pa-10 pa-md-16 text-center elevation-10">
       <v-row justify="center">
         <v-col cols="12" md="8">

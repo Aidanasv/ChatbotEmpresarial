@@ -30,6 +30,7 @@
           <v-list-item prepend-icon="mdi-account" :title="companyBrandName"></v-list-item>
           <v-divider class="my-1"></v-divider>
           <v-list-item prepend-icon="mdi-view-dashboard" title="Dashboard" @click="router.push('/dashboard')"></v-list-item>
+          <v-list-item prepend-icon="mdi-lock-reset" title="Cambiar contraseña" @click="isChangePasswordOpen = true"></v-list-item>
           <v-list-item prepend-icon="mdi-logout" title="Cerrar sesión" @click="handleLogout"></v-list-item>
           <v-list-item prepend-icon="mdi-help-circle-outline" title="Ayuda" @click="router.push('/help')"></v-list-item>
         </v-list>
@@ -52,8 +53,6 @@
       <v-spacer></v-spacer>
 
       <div v-if="!authStore.isAuthenticated" class="d-none d-md-flex align-center">
-        <v-btn variant="text" class="navbar-link">Características</v-btn>
-        <v-btn variant="text" class="navbar-link">Planes</v-btn>
         <v-btn to="/login?mode=signin" variant="text" class="navbar-link font-weight-bold ml-2">Iniciar sesión</v-btn>
         <v-btn color="primary" elevation="0" rounded="lg" class="text-none px-6 ml-4 font-weight-bold"
           to="/login?mode=signup">
@@ -63,6 +62,7 @@
 
       <div v-else class="d-none d-md-flex align-center">
         <v-btn to="/dashboard" variant="text" class="navbar-link font-weight-bold">Dashboard</v-btn>
+        <v-btn variant="text" class="navbar-link font-weight-bold ml-2" @click="isChangePasswordOpen = true">Cambiar contraseña</v-btn>
         <v-btn color="primary" elevation="0" rounded="lg" class="text-none px-6 ml-4 font-weight-bold"
           @click="handleLogout">
           Cerrar sesión
@@ -79,27 +79,34 @@
         <v-btn icon to="/dashboard">
           <v-icon>mdi-view-dashboard</v-icon>
         </v-btn>
+        <v-btn icon @click="isChangePasswordOpen = true">
+          <v-icon>mdi-lock-reset</v-icon>
+        </v-btn>
         <v-btn icon @click="handleLogout">
           <v-icon>mdi-logout</v-icon>
         </v-btn>
       </div>
     </template>
+
+    <ChangePasswordDialog v-model="isChangePasswordOpen" />
   </v-app-bar>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useSetupStore } from '@/stores/useSetupStore'
 import { useUiStore } from '@/stores/useUiStore'
+import ChangePasswordDialog from '@/components/layout/ChangePasswordDialog.vue'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 const setupStore = useSetupStore()
 const uiStore = useUiStore()
+const isChangePasswordOpen = ref(false)
 
 const isDashboardRoute = computed(() => route.path.startsWith('/dashboard'))
 const showDrawerToggle = computed(() => authStore.isAuthenticated && isDashboardRoute.value)
