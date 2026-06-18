@@ -3,6 +3,8 @@ import axios from "axios";
 import { defineStore } from "pinia";
 import { useUiStore } from "./useUiStore";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://chatbotempresarial-1067165831463.europe-west1.run.app";
+
 export const useUserStore = defineStore('user', {
     state: (): UserState => ({
         user: null,
@@ -16,7 +18,7 @@ export const useUserStore = defineStore('user', {
             try {
                 const page = query.page ?? 1;
                 const pageSize = query.pageSize ?? this.limit;
-                const response = await axios.get<UsersPagedResponse>('http://localhost:5267/api/user', {
+                const response = await axios.get<UsersPagedResponse>(`${API_BASE_URL}/api/user`, {
                     params: {
                         search: query.search ?? '',
                         role: query.role ?? '',
@@ -43,7 +45,7 @@ export const useUserStore = defineStore('user', {
 
         async createUser(newUser: Omit<User, 'id' | 'createdAt'>) {
             try {
-                await axios.post<User>('http://localhost:5267/api/user', newUser, {
+                await axios.post<User>(`${API_BASE_URL}/api/user`, newUser, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 useUiStore().showSuccess("Usuario creado correctamente.", "Éxito", 3000);
@@ -59,7 +61,7 @@ export const useUserStore = defineStore('user', {
 
         async updateUser(updatedData: Partial<Omit<User, 'createdAt'>>) {
             try {
-                await axios.put<User>(`http://localhost:5267/api/user/${updatedData.id}`, updatedData, {
+                await axios.put<User>(`${API_BASE_URL}/api/user/${updatedData.id}`, updatedData, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 useUiStore().showSuccess("Usuario actualizado correctamente.", "Éxito", 3000);
@@ -75,7 +77,7 @@ export const useUserStore = defineStore('user', {
 
         async deleteUser(userId: number) {
             try {
-                await axios.delete(`http://localhost:5267/api/user/${userId}`, {
+                await axios.delete(`${API_BASE_URL}/api/user/${userId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 useUiStore().showSuccess("Usuario eliminado correctamente.", "Éxito", 3000);

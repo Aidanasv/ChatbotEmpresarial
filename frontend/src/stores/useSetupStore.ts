@@ -4,6 +4,8 @@ import axios from 'axios'
 import { useUiStore } from './useUiStore'
 import { hasSubscriptionFeature } from '@/utils/subscriptionPermissions'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://chatbotempresarial-1067165831463.europe-west1.run.app'
+
 export const useSetupStore = defineStore('setup', {
     state: (): SetUpState => ({
         isLoading: false,
@@ -41,7 +43,7 @@ export const useSetupStore = defineStore('setup', {
 
         async saveCompanySetup(companySetup: CompanySetup) {
             try {
-                const response = await axios.post<CompanySetupResponse>('http://localhost:5267/api/setup/company', companySetup,
+                const response = await axios.post<CompanySetupResponse>(`${API_BASE_URL}/api/setup/company`, companySetup,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.companySetup = response.data;
@@ -64,7 +66,7 @@ export const useSetupStore = defineStore('setup', {
         async savePersonalitySetup(personalitySetup: PersonalitySetup) {
             try {
                 this.isLoading = true;
-                const response = await axios.post('http://localhost:5267/api/setup/personalization', personalitySetup,
+                const response = await axios.post(`${API_BASE_URL}/api/setup/personalization`, personalitySetup,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.isLoading = false;
@@ -89,7 +91,7 @@ export const useSetupStore = defineStore('setup', {
         async saveAppearanceSetup(appearanceSetup: AppearanceSetup) {
             try {
                 this.isLoading = true;
-                const response = await axios.post('http://localhost:5267/api/setup/appearance', appearanceSetup,
+                const response = await axios.post(`${API_BASE_URL}/api/setup/appearance`, appearanceSetup,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.isLoading = false;
@@ -112,7 +114,7 @@ export const useSetupStore = defineStore('setup', {
                 this.isLoading = true;
 
                 // Guardar FAQs
-                const response = await axios.post('http://localhost:5267/api/setup/faqs', knowledgeSetup.faqs,
+                const response = await axios.post(`${API_BASE_URL}/api/setup/faqs`, knowledgeSetup.faqs,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
 
@@ -121,7 +123,7 @@ export const useSetupStore = defineStore('setup', {
                     const formData = new FormData();
                     files.forEach(file => formData.append('files', file));
 
-                    await axios.post('http://localhost:5267/api/documentSources', formData,
+                    await axios.post(`${API_BASE_URL}/api/documentSources`, formData,
                         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                     );
                 }
@@ -149,7 +151,7 @@ export const useSetupStore = defineStore('setup', {
         async saveInitialSetup() {
             try {
                 this.isLoading = true;
-                const response = await axios.post('http://localhost:5267/api/setup/setupInitial', {
+                const response = await axios.post(`${API_BASE_URL}/api/setup/setupInitial`, {
                     companySetup: this.companySetup,
                     personalitySetup: this.personalitySetup,
                     appearanceSetup: this.appearanceSetup
@@ -171,7 +173,7 @@ export const useSetupStore = defineStore('setup', {
         async getSetupData(companyId: number) {
             try {
                 this.isLoading = true;
-                const response = await axios.get(`http://localhost:5267/api/setup/setup/${companyId}`, {
+                const response = await axios.get(`${API_BASE_URL}/api/setup/setup/${companyId}`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
                 const { companySetup, personalitySetup, appearanceSetup, knowledgeSetup } = response.data;
@@ -194,7 +196,7 @@ export const useSetupStore = defineStore('setup', {
 
         async getCurrentSubscription() {
             try {
-                const response = await axios.get<{ subscriptionId: number }>('http://localhost:5267/api/setup/company/subscription', {
+                const response = await axios.get<{ subscriptionId: number }>(`${API_BASE_URL}/api/setup/company/subscription`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 
@@ -212,7 +214,7 @@ export const useSetupStore = defineStore('setup', {
 
         async getCurrentSubscriptionLimits() {
             try {
-                const response = await axios.get<{ subscriptionId: number; maxUsers: number }>('http://localhost:5267/api/setup/company/subscription', {
+                const response = await axios.get<{ subscriptionId: number; maxUsers: number }>(`${API_BASE_URL}/api/setup/company/subscription`, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 
@@ -230,7 +232,7 @@ export const useSetupStore = defineStore('setup', {
 
         async getCurrentSubscriptionFeatures(companyId?: number) {
             try {
-                const response = await axios.get<{ companyId: number, features: string[] }>('http://localhost:5267/api/setup/company/subscription/features', {
+                const response = await axios.get<{ companyId: number, features: string[] }>(`${API_BASE_URL}/api/setup/company/subscription/features`, {
                     params: companyId ? { companyId } : undefined,
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
@@ -254,7 +256,7 @@ export const useSetupStore = defineStore('setup', {
 
         async updateCompanySubscription(subscriptionId: number) {
             try {
-                const response = await axios.patch<{ subscriptionId: number }>(`http://localhost:5267/api/setup/company/subscription/${subscriptionId}`, null, {
+                const response = await axios.patch<{ subscriptionId: number }>(`${API_BASE_URL}/api/setup/company/subscription/${subscriptionId}`, null, {
                     headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                 });
 
@@ -272,7 +274,7 @@ export const useSetupStore = defineStore('setup', {
 
         async deleteDocuments(documentSourceIds: string[]) {
             try {
-                const response = await axios.delete('http://localhost:5267/api/documentSources/files',
+                const response = await axios.delete(`${API_BASE_URL}/api/documentSources/files`,
                     {
                         data: { documentSourceIds },
                         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -292,7 +294,7 @@ export const useSetupStore = defineStore('setup', {
 
         async getCorpusRebuildStatus() {
             try {
-                const response = await axios.get('http://localhost:5267/api/documentSources/rebuild-status',
+                const response = await axios.get(`${API_BASE_URL}/api/documentSources/rebuild-status`,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
 

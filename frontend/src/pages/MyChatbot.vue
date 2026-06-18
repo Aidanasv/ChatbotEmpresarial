@@ -125,6 +125,8 @@ import WidgetChatbot from '@/components/dashboard/widgetChatbot.vue'
 import { useChatBotStore } from '@/stores/useChatBotStore'
 import type { Conversation, Message } from '@/types/chatbot'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://chatbotempresarial-1067165831463.europe-west1.run.app'
+
 const route = useRoute()
 const chatbotStore = useChatBotStore()
 const theme = useTheme()
@@ -236,7 +238,7 @@ const loadEmbedConfig = async () => {
 
     try {
         errorMessage.value = ''
-        const response = await axios.get(`http://localhost:5267/api/chatbot/embed/${chatbotId.value}`)
+        const response = await axios.get(`${API_BASE_URL}/api/chatbot/embed/${chatbotId.value}`)
         const apiPrimaryColor = String(response.data.primaryColor ?? '#536DFE').trim() || '#536DFE'
 
         if (theme.themes.value.embedTheme) {
