@@ -4,21 +4,4 @@
   .gap-3 {
     gap: 12px;
   }
-
-  .chart-placeholder {
-    height: 350px;
-    width: 100%;
-    border: 2px dashed $border-color;
-    transition: $transition-base;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.02) !important;
-    }
-  }
-
-  .chart-placeholder-small {
-    height: 250px;
-    width: 100%;
-    border: 2px dashed $border-color;
-  }
 }

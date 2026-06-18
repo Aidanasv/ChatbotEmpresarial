@@ -85,7 +85,13 @@ namespace backend.Controllers
                         Name = d.Name,
                         CreatedAt = d.CreatedAt
                     }).ToList()
-                }
+                },
+                AppearanceSetup = company.ChatbotSettings != null ? new AppearanceSetupDto
+                {
+                    PrimaryColor = company.ChatbotSettings.PrimaryColor,
+                    ShowChatbotAvatar = company.ChatbotSettings.ShowAvatar,
+                    WidgetPosition = company.ChatbotSettings.WidgetPosition
+                } : new AppearanceSetupDto()
             };
 
             return Ok(setupResponse);

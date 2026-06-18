@@ -92,12 +92,39 @@ namespace backend.Controllers
 
         [Authorize(Roles = "SuperAdmin")]
         [HttpGet("companies")]
-        public async Task<IActionResult> GetCompanies(int limit = 5, int offset = 0)
+        public async Task<IActionResult> GetCompanies([FromQuery] CompaniesQueryDTO query)
         {
-            var companiesRaw = await _context.Companies
+            var page = query.Page < 1 ? 1 : query.Page;
+            var pageSize = query.PageSize < 1 ? 10 : Math.Min(query.PageSize, 100);
+            var search = query.Search?.Trim().ToLower();
+            var statusFilter = query.Status?.Trim();
+
+            var baseQuery = _context.Companies.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                baseQuery = baseQuery.Where(c =>
+                    c.Name.ToLower().Contains(search) ||
+                    c.Email.ToLower().Contains(search));
+            }
+
+            var activeCount = await baseQuery.CountAsync(c => c.Status == CompanyStatus.Active);
+            var inReviewCount = await baseQuery.CountAsync(c => c.Status == CompanyStatus.InReview);
+            var inactiveCount = await baseQuery.CountAsync(c => c.Status == CompanyStatus.Inactive);
+
+            if (!string.IsNullOrWhiteSpace(statusFilter)
+                && !string.Equals(statusFilter, "Todas", StringComparison.OrdinalIgnoreCase)
+                && Enum.TryParse<CompanyStatus>(statusFilter, out var parsedStatus))
+            {
+                baseQuery = baseQuery.Where(c => c.Status == parsedStatus);
+            }
+
+            var total = await baseQuery.CountAsync();
+
+            var companiesRaw = await baseQuery
                 .OrderByDescending(c => c.CreatedAt)
-                .Skip(offset)
-                .Take(limit)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(c => new
                 {
                     c.Id,
@@ -127,7 +154,16 @@ namespace backend.Controllers
                 CreatedAt = c.CreatedAt.ToString("g")
             }).ToList();
 
-            return Ok(companyData);
+            return Ok(new CompanyAnalyticsPagedResponseDTO
+            {
+                Items = companyData,
+                Total = total,
+                Page = page,
+                PageSize = pageSize,
+                ActiveCount = activeCount,
+                InReviewCount = inReviewCount,
+                InactiveCount = inactiveCount
+            });
         }
 
         private string GetInitials(string name)

@@ -5,6 +5,7 @@ import LoginView from '@/pages/Login.vue'
 import SetupView from '@/pages/Setup.vue'
 import DashboardView from '@/pages/Dashboard.vue'
 import AdminDashboardView from '@/pages/AdminDashboard.vue'
+import MyChatbotView from '@/pages/MyChatbot.vue'
 
 import Conversations from '@/components/dashboard/Conversations.vue'
 import Users from '@/components/dashboard/Users.vue'
@@ -47,6 +48,7 @@ const router = createRouter({
       },
       beforeEnter: async () => {
         const authStore = useAuthStore()
+        authStore.ensureTokenValidity()
         const role = (authStore.role || '').toLowerCase()
         if (!authStore.isAuthenticated) {
           return '/login'
@@ -137,6 +139,12 @@ const router = createRouter({
           meta: { title: 'Conocimiento' }
         }
       ]
+    },
+    {
+      path: '/my-chatbot/:chatbotId',
+      name: 'my-chatbot',
+      component: MyChatbotView,
+      meta: { embed: true }
     }
   ],
 
@@ -146,11 +154,17 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const isMyChatbotRoute = to.path.startsWith('/my-chatbot/')
+  const authStore = useAuthStore()
+
+  if (!isMyChatbotRoute) {
+    authStore.ensureTokenValidity()
+  }
+
   if (!to.path.startsWith('/dashboard')) {
     return true
   }
 
-  const authStore = useAuthStore()
   if (!authStore.isAuthenticated) {
     return '/login'
   }

@@ -6,7 +6,7 @@
     align-items: center;
 
     .hero-chip {
-        color: $brand-primary;
+        color: rgb(var(--v-theme-primary));
     }
 
     .hero-title {
@@ -14,7 +14,7 @@
         font-weight: $font-weight-black;
 
         .brand-highlight {
-            color: $brand-primary;
+            color: rgb(var(--v-theme-primary));
         }
     }
 
@@ -23,7 +23,7 @@
     }
 
     .hero-illustration-box {
-        background-color: $bg-dark;
+        background-color: rgb(var(--v-theme-surface-dark));
 
         .robot-icon {
             color: rgba(255, 255, 255, 0.1);
@@ -38,12 +38,12 @@
 
 .features-section {
 
-    .icon-box {
-        background-color: rgba($brand-primary, 0.1) !important;
+    .v-avatar.icon-box {
+        background-color: rgba(var(--v-theme-primary), 0.1);
 
-        .feature-icon {
-            opacity: 1 !important;
-            color: $brand-primary !important;
+        .v-icon.feature-icon {
+            opacity: 1;
+            color: rgb(var(--v-theme-primary));
         }
     }
 
@@ -54,8 +54,8 @@
 
         &:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba($brand-primary, 0.1) !important;
-            border-color: rgba($brand-primary, 0.2);
+            box-shadow: 0 10px 20px rgba(var(--v-theme-primary), 0.1);
+            border-color: rgba(var(--v-theme-primary), 0.2);
         }
     }
 }
@@ -66,7 +66,7 @@
 
 .cta-container {
     .cta-banner {
-        background-color: $brand-primary;
+        background-color: rgb(var(--v-theme-primary));
         color: white;
         transition: $transition-base;
 
@@ -81,7 +81,7 @@
 
         .cta-btn {
             background-color: white;
-            color: $brand-primary;
+            color: rgb(var(--v-theme-primary));
 
             &:hover {
                 background-color: rgba(255, 255, 255, 0.9);

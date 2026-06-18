@@ -38,15 +38,6 @@
         </template>
       </v-list>
 
-      <template v-slot:append>
-        <div class="pa-3">
-          <v-list density="compact" nav>
-            <v-list-item prepend-icon="mdi-help-circle-outline" title="Ayuda" value="ayuda" rounded="lg"></v-list-item>
-            <v-list-item prepend-icon="mdi-logout" title="Cerrar sesión" value="logout" rounded="lg"
-              @click="handleLogout"></v-list-item>
-          </v-list>
-        </div>
-      </template>
     </v-navigation-drawer>
 
     <v-main>
@@ -57,12 +48,10 @@
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useDisplay } from 'vuetify'
 import { useUiStore } from '@/stores/useUiStore'
 
-const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUiStore()
 const { mdAndDown } = useDisplay()
@@ -75,10 +64,5 @@ watch(isMobile, (mobile) => {
 
 const normalizedRole = computed(() => (authStore.role || '').toLowerCase())
 const isSuperAdmin = computed(() => normalizedRole.value === 'superadmin')
-
-const handleLogout = () => {
-  authStore.logout()
-  router.push('/')
-}
 
 </script>

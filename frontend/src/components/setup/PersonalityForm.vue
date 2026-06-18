@@ -1,5 +1,5 @@
 <template>
-  <div class="step-content text-left">
+  <v-container>
     <div class="mb-8">
       <h2 class="text-h5 font-weight-bold mb-1">Personalidad del chatbot</h2>
       <p class="text-medium-emphasis">Define cómo se comportará y comunicará tu asistente</p>
@@ -17,7 +17,20 @@
       <label class="form-label mb-3">Tono de comunicación</label>
       <v-row class="mb-6">
         <v-col cols="12" sm="6" v-for="option in toneOptions" :key="option.value">
-          <v-card
+          <v-btn
+            :variant="modelValue.chatbotTone === option.value ? 'flat' : 'outlined'"
+            :color="modelValue.chatbotTone === option.value ? 'primary' : 'grey-darken-1'"
+            size="x-large"
+            width="100%"
+            rounded="lg"
+            @click="update('chatbotTone', option.value)"
+          >
+            <div class="p-4">
+              <div class="font-weight-bold mb-1 tone-title">{{ option.title }}</div>
+              <div class="text-caption">{{ option.desc }}</div>
+            </div>
+          </v-btn>
+          <!-- <v-card
             flat
             :class="['tone-card cursor-pointer pa-4 rounded-xl d-flex align-start', { 'is-selected': modelValue.chatbotTone === option.value }]"
             @click="update('chatbotTone', option.value)"
@@ -34,7 +47,7 @@
               <div class="font-weight-bold text-body-1 mb-1 tone-title">{{ option.title }}</div>
               <div class="text-caption text-medium-emphasis">{{ option.desc }}</div>
             </div>
-          </v-card>
+          </v-card> -->
         </v-col>
       </v-row>
 
@@ -54,7 +67,7 @@
         variant="solo" flat class="setup-input" rows="2" hide-details
       ></v-textarea>
     </v-form>
-  </div>
+  </v-container>
 </template>
 
 <script setup lang="ts">

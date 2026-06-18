@@ -38,4 +38,23 @@ namespace backend.DTOs
         public string Status { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = string.Empty;
     }
+
+    public class CompaniesQueryDTO
+    {
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    public class CompanyAnalyticsPagedResponseDTO
+    {
+        public List<CompanyAnalyticsDTO> Items { get; set; } = new();
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int ActiveCount { get; set; }
+        public int InReviewCount { get; set; }
+        public int InactiveCount { get; set; }
+    }
 }

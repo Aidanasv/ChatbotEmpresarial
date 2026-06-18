@@ -1,12 +1,18 @@
 @use '../base/variables' as *;
 
+.v-main:has(.dashboard-layout) {
+  height: 100%;
+
+  > .v-main__wrap {
+    height: 100%;
+  }
+}
+
 .dashboard-layout.v-layout {
+  height: 100%;
+
   .v-navigation-drawer {
     border-right: 1px solid $border-color;
-  }
-
-  .v-app-bar.v-toolbar {
-    border-bottom: 1px solid $border-color;
   }
 
   .dash-card.v-card {
@@ -20,33 +26,112 @@
     }
   }
 
-  .kpi-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba($brand-primary, 0.08);
-    
-    .v-icon {
-      color: $brand-primary;
-      opacity: 1;
-    }
-  }
-
   .v-list-item--active.v-list-item {
-    background-color: rgba($brand-primary, 0.08);
-    color: $brand-primary;
+    background-color: rgba(var(--v-theme-primary), 0.08);
+    color: rgb(var(--v-theme-primary));
     font-weight: $font-weight-bold;
 
     .v-icon {
-      color: $brand-primary;
+      color: rgb(var(--v-theme-primary));
       opacity: 1;
     }
   }
 
-  .border-bottom {
-    border-bottom: 1px solid $border-color;
+  .dashboard-section-title {
+    letter-spacing: 0.01em;
+  }
+
+  .dashboard-section-subtitle {
+    max-width: 68ch;
+  }
+
+  .dashboard-panel-card {
+    border-radius: 16px;
+    border: 1px solid $border-color;
+    overflow: hidden;
+  }
+
+  .dashboard-list-item {
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--v-theme-primary), 0.04);
+    }
+  }
+
+  .dashboard-status-pill {
+    border-radius: 999px;
+    padding: 4px 8px;
+    line-height: 1;
+
+    &.status-open {
+      color: #8a6200;
+      background-color: rgba(255, 193, 7, 0.18);
+    }
+
+    &.status-closed {
+      color: #216e39;
+      background-color: rgba(76, 175, 80, 0.18);
+    }
+  }
+
+  .dashboard-empty-state {
+    min-height: 240px;
+  }
+
+  .dashboard-ghost-btn {
+    border-radius: 10px;
+  }
+
+  .home-dashboard {
+    .v-list-item-subtitle {
+      max-width: 58ch;
+    }
+  }
+
+  .dashboard-full-height {
+    height: calc(100vh - 64px);
+  }
+
+  .dashboard-chat-thread {
+    gap: 16px;
+  }
+
+  .dashboard-chat-bubble {
+    max-width: min(680px, 80vw);
+    line-height: 1.45;
+  }
+
+  .dashboard-chat-bubble--bot {
+    border: 1px solid $border-color;
+  }
+
+  @media (max-width: 960px) {
+    .home-dashboard {
+      h1.dashboard-section-title {
+        font-size: 1.2rem;
+      }
+
+      .dashboard-section-subtitle {
+        font-size: 0.9rem;
+      }
+
+      .dashboard-status-pill {
+        padding: 3px 7px;
+      }
+
+      .v-list-item-subtitle {
+        max-width: 34ch;
+      }
+    }
+
+    .dashboard-full-height {
+      height: calc(100vh - 56px);
+    }
+
+    .dashboard-chat-bubble {
+      max-width: min(620px, 86vw);
+    }
+
   }
 }

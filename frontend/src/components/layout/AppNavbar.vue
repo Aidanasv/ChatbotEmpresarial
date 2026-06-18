@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar flat class="app-navbar px-3 px-md-8" height="72">
+  <v-app-bar flat class="app-navbar px-3 px-md-8">
     <template v-if="showDrawerToggle">
       <v-btn icon variant="text" class="mr-2" @click="uiStore.toggleDashboardDrawer()">
         <v-icon>mdi-menu</v-icon>
@@ -13,16 +13,29 @@
       </div>
 
       <v-spacer></v-spacer>
+      <v-menu location="bottom end">
+        <template #activator="{ props }">
+          <v-btn variant="text" class="ml-2" v-bind="props" aria-label="Menu de usuario">
+            <v-avatar color="primary" size="34" class="mr-2">
+              <span class="text-caption font-weight-bold text-white">{{ logoLetter }}</span>
+            </v-avatar>
+            <div class="d-flex flex-column">
+              <span class="text-subtitle-1 font-weight-bold navbar-logo-text">{{ companyBrandName }}</span>
+              <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BotForge</span>
+            </div>
+          </v-btn>
+        </template>
 
-      <div class="d-flex align-center cursor-pointer navbar-company-pill" @click="handleGoHome">
-        <v-avatar color="primary" size="34" class="mr-2">
-          <span class="text-caption font-weight-bold text-white">{{ logoLetter }}</span>
-        </v-avatar>
-        <div class="d-flex flex-column">
-          <span class="text-subtitle-1 font-weight-bold navbar-logo-text">{{ companyBrandName }}</span>
-          <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BotForge</span>
-        </div>
-      </div>
+        <v-list density="compact" min-width="200">
+          <v-list-item prepend-icon="mdi-account" :title="companyBrandName"></v-list-item>
+          <v-divider class="my-1"></v-divider>
+          <v-list-item prepend-icon="mdi-view-dashboard" title="Dashboard" @click="router.push('/dashboard')"></v-list-item>
+          <v-list-item prepend-icon="mdi-logout" title="Cerrar sesión" @click="handleLogout"></v-list-item>
+          <v-list-item prepend-icon="mdi-help-circle-outline" title="Ayuda" @click="router.push('/help')"></v-list-item>
+        </v-list>
+      </v-menu>
+
+
     </template>
 
     <template v-else>

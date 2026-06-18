@@ -27,4 +27,20 @@ namespace backend.DTOs
         public string? Role { get; set; }
         public string? Status { get; set; }
     }
+
+    public class UsersQueryDTO
+    {
+        public string? Search { get; set; }
+        public string? Role { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    public class UsersPagedResponseDTO
+    {
+        public List<UserDTO> Items { get; set; } = new();
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+    }
 }

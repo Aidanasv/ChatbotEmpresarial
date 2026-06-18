@@ -157,10 +157,11 @@ const props = defineProps<{
   }
 }>()
 
-const emit = defineEmits(['update:modelValue', 'update:pendingFiles'])
+const emit = defineEmits(['update:modelValue', 'update:pending-files', 'update:deleted-document-ids'])
 
 const rawFilesList = ref<{ tempId: string, file: File }[]>([]) 
 const chosenFiles = ref<File[]>([])
+const deletedDocumentIds = ref<string[]>([]) // Track IDs of documents to delete from corpus
 
 const documents = computed(() => props.modelValue.documents)
 
@@ -176,7 +177,7 @@ const handleFileSelect = (files: File | File[] | null) => {
   }))
 
   rawFilesList.value = [...rawFilesList.value, ...pendingEntries]
-  emit('update:pendingFiles', rawFilesList.value.map(item => item.file))
+  emit('update:pending-files', rawFilesList.value.map(item => item.file))
 
   // Mapeamos para la lista visual del componente
   const newDocs = pendingEntries.map(({ file, tempId }) => ({
@@ -198,8 +199,15 @@ const removeDocument = (index: number) => {
   const updatedDocs = documents.value.filter((_, i) => i !== index)
 
   if (docToRemove?.id?.startsWith('tmp-')) {
+    // Nuevo documento no guardado: eliminar del buffer de archivos
     rawFilesList.value = rawFilesList.value.filter(entry => entry.tempId !== docToRemove.id)
-    emit('update:pendingFiles', rawFilesList.value.map(item => item.file))
+    emit('update:pending-files', rawFilesList.value.map(item => item.file))
+  } else if (docToRemove?.id && !docToRemove.id.startsWith('tmp-')) {
+    // Documento existente: registrar para borrar del corpus
+    if (!deletedDocumentIds.value.includes(docToRemove.id)) {
+      deletedDocumentIds.value.push(docToRemove.id)
+    }
+    emit('update:deleted-document-ids', deletedDocumentIds.value)
   }
   
   emit('update:modelValue', { ...props.modelValue, documents: updatedDocs })

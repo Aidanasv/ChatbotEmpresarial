@@ -1,9 +1,11 @@
 @use './variables' as *;
 
-body {
-  font-family: $font-family-main !important; 
+body,
+.v-application {
+  font-family: $font-family-main;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
 }
 
 a, button {
@@ -14,13 +16,10 @@ a, button {
   width: 8px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba($brand-primary, 0.2);
+  background: rgba(var(--v-theme-primary), 0.2);
   border-radius: 10px;
   &:hover {
-    background: $brand-primary;
+    background: rgb(var(--v-theme-primary));
   }
 }
 
-.line-height-1 {
-  line-height: 1;
-}

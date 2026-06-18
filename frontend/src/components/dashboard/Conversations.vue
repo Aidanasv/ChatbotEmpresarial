@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-0 v-window-item--active" style="height: calc(100vh - 64px);">
+  <v-container fluid class="pa-0 v-window-item--active chat-view-container dashboard-full-height">
     <v-row no-gutters class="h-100">
 
       <v-col v-if="!smAndDown || activeChatId === null" cols="12" md="4" lg="5" class="d-flex flex-column border-e h-100 bg-surface">
@@ -66,57 +66,51 @@
               <div>
                 <div class="font-weight-bold text-body-1">{{ conversationMessage.customerName || 'Cliente Anónimo' }}
                 </div>
-                <div class="text-caption text-medium-emphasis d-flex align-center">
-                  <v-icon size="x-small"
-                    :color="conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'success' : 'grey'"
-                    class="mr-1">mdi-circle</v-icon>
-                  {{ conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'Activo ahora'
-                  : 'Cerrada' }}
+                <v-chip
+                  size="small"
+                  variant="tonal"
+                  class="mt-1"
+                  :color="conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'success' : 'grey'"
+                >
+                  {{ conversationMessage.status === 'Open' || conversationMessage.status === 'Abierta' ? 'Abierta' : 'Cerrada' }}
+                </v-chip>
+    
+              
+                <div v-if="conversationMessage.customerEmail" class="text-caption text-medium-emphasis d-flex align-center mt-1">
+                  <v-icon size="x-small" class="mr-1">mdi-email-outline</v-icon>
+                  {{ conversationMessage.customerEmail }}
+                </div>
+                <div v-if="conversationMessage.customerPhone" class="text-caption text-medium-emphasis d-flex align-center">
+                  <v-icon size="x-small" class="mr-1">mdi-phone-outline</v-icon>
+                  {{ conversationMessage.customerPhone }}
                 </div>
               </div>
             </div>
-            <v-btn variant="tonal" color="primary" size="small" class="text-none font-weight-bold">
-              Tomar control manual
-            </v-btn>
           </div>
 
-          <div class="flex-grow-1 overflow-y-auto pa-6 d-flex flex-column" style="gap: 16px;">
+          <div class="flex-grow-1 overflow-y-auto pa-4 pa-md-6 d-flex flex-column dashboard-chat-thread">
             <div v-for="message in conversationMessage.messages" :key="message.id" class="mb-4">
-              <div v-if="message.role === 'Bot'" class="d-flex align-start">
-                <v-avatar size="34" color="primary" variant="tonal" class="mr-3 mt-1">
-                  <v-icon size="18">mdi-robot-outline</v-icon>
-                </v-avatar>
+              <div v-if="isBotMessage(message.role)" class="d-flex align-start">
+            
                 <div>
-                  <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2" border color="white"
-                    style="max-width: min(680px, 80vw); line-height: 1.45;">
-                    {{ message.content }}
+                  <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2 dashboard-chat-bubble dashboard-chat-bubble--bot" border color="white">
+                    <div v-html="renderBotMessage(message.content)"></div>
                   </v-sheet>
-                  <div class="text-caption text-medium-emphasis mt-1">{{ message.createdAt }}</div>
+                  <div class="text-caption text-medium-emphasis mt-1">{{ formatTime(message.createdAt) }}</div>
                 </div>
               </div>
 
               <div v-else class="d-flex justify-end">
                 <div class="text-right">
-                  <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white" color="primary"
-                    style="max-width: min(680px, 80vw); line-height: 1.45;">
+                  <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white dashboard-chat-bubble dashboard-chat-bubble--user" color="primary">
                     {{ message.content }}
                   </v-sheet>
-                  <div class="text-caption text-medium-emphasis mt-1">{{ message.createdAt }}</div>
+                  <div class="text-caption text-medium-emphasis mt-1">{{ formatTime(message.createdAt) }}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="pa-4 bg-white border-t flex-shrink-0">
-            <v-text-field v-model="newMessage" variant="outlined"
-              :placeholder="`Escribe un mensaje para ${conversationMessage.customerName || 'el cliente'}...`"
-              hide-details bg-color="white" append-inner-icon="mdi-send" @click:append-inner="sendMessage"
-              @keyup.enter="sendMessage">
-              <template v-slot:prepend-inner>
-                <v-btn icon="mdi-paperclip" variant="text" size="small" color="grey-darken-1" class="mr-1"></v-btn>
-              </template>
-            </v-text-field>
-          </div>
         </template>
 
         <template v-else>
@@ -139,6 +133,7 @@ import { useConversationsStore } from '@/stores/useConversations'
 import { useAnalyticsStore } from '@/stores/useAnalyticsStore'
 import { useRoute } from 'vue-router'
 import { useDisplay } from 'vuetify'
+import MarkdownIt from 'markdown-it'
 
 const conversationsStore = useConversationsStore()
 const analyticsStore = useAnalyticsStore()
@@ -148,10 +143,31 @@ const { conversations, limit, offset, conversationMessage } = storeToRefs(conver
 const { totalConversations } = storeToRefs(analyticsStore)
 
 const activeChatId = ref<number | null>(null)
-const newMessage = ref('')
 const isLoading = ref(true)
 
 const currentPage = ref(1)
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true
+})
+
+const formatTime = (value: string): string => {
+  const parsedDate = new Date(value)
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value
+  }
+
+  return parsedDate.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const isBotMessage = (role: string): boolean => role.toLowerCase() === 'bot'
+
+const renderBotMessage = (content: string): string => md.render(content)
 
 const selectConversation = async (conversationId: number) => {
   activeChatId.value = conversationId
@@ -162,7 +178,7 @@ const goBackToList = () => {
   activeChatId.value = null
 }
 
-const selectConversationFromQuery = async () => {
+const selectConversationFromQuery = async (): Promise<boolean> => {
   const conversationIdQuery = route.query.conversationId
   const targetConversationId = Number(conversationIdQuery)
 
@@ -195,8 +211,10 @@ watch(conversations, (newConversations) => {
     return
   }
 
-  if (newConversations.length > 0 && activeChatId.value === null) {
-    selectConversation(newConversations[0].conversationId)
+  const [firstConversation] = newConversations
+
+  if (firstConversation && activeChatId.value === null) {
+    selectConversation(firstConversation.conversationId)
   }
 })
 
@@ -215,11 +233,7 @@ watch(currentPage, (newPage) => {
   loadConversations()
 })
 
-const sendMessage = () => {
-  if (!newMessage.value.trim() || activeChatId.value === null) return
-  console.log(`Enviando mensaje a la conversación ${activeChatId.value}:`, newMessage.value)
-  newMessage.value = ''
-}
+
 
 onMounted(async () => {
   limit.value = 7
@@ -227,8 +241,10 @@ onMounted(async () => {
   await loadConversations()
 
   const selectedFromQuery = await selectConversationFromQuery()
-  if (!selectedFromQuery && !smAndDown.value && conversations.value.length > 0 && activeChatId.value === null) {
-    await selectConversation(conversations.value[0].conversationId)
+  const [firstConversation] = conversations.value
+
+  if (!selectedFromQuery && !smAndDown.value && firstConversation && activeChatId.value === null) {
+    await selectConversation(firstConversation.conversationId)
   }
 })
 </script>

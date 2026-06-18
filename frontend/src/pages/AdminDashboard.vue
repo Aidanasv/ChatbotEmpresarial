@@ -7,7 +7,17 @@
 
         <KpiCardsGrid :items="cards" :is-loading="isLoading" row-class="mb-2" />
 
-        <AdminCompaniesTable :companies="companies" @status-change="handleCompanyStatusChange" />
+        <AdminCompaniesTable
+            :companies="companies"
+            :total="companyPanelTotal"
+            :page="companyPanelPage"
+            :page-size="companyPanelPageSize"
+            :active-count="activeCompaniesCount"
+            :in-review-count="inReviewCompaniesCount"
+            :inactive-count="inactiveCompaniesCount"
+            @status-change="handleCompanyStatusChange"
+            @filters-change="handleCompanyFiltersChange"
+        />
     </v-container>
 </template>
 
@@ -17,9 +27,22 @@ import { storeToRefs } from 'pinia'
 import AdminCompaniesTable, { type AdminCompany } from '@/components/admin/AdminCompaniesTable.vue'
 import KpiCardsGrid, { type KpiCardItem } from '@/components/dashboard/KpiCardsGrid.vue'
 import { useSuperAdminStore } from '@/stores/useSuperAdminStore'
+import type { CompanyLifecycleStatus } from '@/types/companyStatus'
 
 const superAdminStore = useSuperAdminStore()
-const { mrr, companyPanelData, totalCompanies, totalUsers, totalConversations } = storeToRefs(superAdminStore)
+const {
+    mrr,
+    companyPanelData,
+    totalCompanies,
+    totalUsers,
+    totalConversations,
+    companyPanelTotal,
+    companyPanelPage,
+    companyPanelPageSize,
+    activeCompaniesCount,
+    inReviewCompaniesCount,
+    inactiveCompaniesCount
+} = storeToRefs(superAdminStore)
 
 const formatEur = (value: number) => {
     return new Intl.NumberFormat('es-ES', {
@@ -38,15 +61,36 @@ const cards = computed<KpiCardItem[]>(() => [
 ])
 
 const companies = computed<AdminCompany[]>(() => companyPanelData.value)
+const companyFilters = ref<{ query: string; status: 'Todas' | CompanyLifecycleStatus; page: number; pageSize: number }>({
+    query: '',
+    status: 'Todas',
+    page: 1,
+    pageSize: 10
+})
 
 const isLoading = ref(true)
+
+const fetchCompanies = async () => {
+    await superAdminStore.getCompanyPanelData({
+        search: companyFilters.value.query,
+        status: companyFilters.value.status,
+        page: companyFilters.value.page,
+        pageSize: companyFilters.value.pageSize
+    })
+}
 
 const handleCompanyStatusChange = async (payload: { companyId: string; status: 'Active' | 'Inactive' | 'InReview' }) => {
     try {
         await superAdminStore.updateCompanyStatus(Number(payload.companyId), payload.status)
+        await fetchCompanies()
     } catch (error) {
         console.error('Error updating company status:', error)
     }
+}
+
+const handleCompanyFiltersChange = async (payload: { query: string; status: 'Todas' | CompanyLifecycleStatus; page: number; pageSize: number }) => {
+    companyFilters.value = payload
+    await fetchCompanies()
 }
 
 onMounted(async () => {
@@ -58,7 +102,7 @@ onMounted(async () => {
     }
 
     try {
-        await superAdminStore.getCompanyPanelData()
+        await fetchCompanies()
     } catch (error) {
         console.error('Error loading company panel data:', error)
     } finally {
@@ -66,3 +110,4 @@ onMounted(async () => {
     }
 })
 </script>
+

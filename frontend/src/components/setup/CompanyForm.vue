@@ -1,5 +1,5 @@
 <template>
-  <div class="step-content text-left">
+  <v-container>
     <div class="mb-8">
       <h2 class="text-h5 font-weight-bold mb-1">Información de tu empresa</h2>
       <p class="text-medium-emphasis">Cuéntanos sobre tu negocio para personalizar el chatbot</p>
@@ -62,7 +62,7 @@
         variant="solo" flat class="setup-input" rows="4" hide-details
       ></v-textarea>
     </v-form>
-  </div>
+  </v-container>
 </template>
 
 <script setup lang="ts">

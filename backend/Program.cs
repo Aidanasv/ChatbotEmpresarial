@@ -9,7 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("BBDD");
 var googleApiKey = builder.Configuration["GOOGLE_API_KEY"];
+var GOOGLE_APPLICATION_CREDENTIALS = builder.Configuration["GOOGLE_APPLICATION_CREDENTIALS"];
 Environment.SetEnvironmentVariable("GOOGLE_API_KEY", googleApiKey);
+Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", GOOGLE_APPLICATION_CREDENTIALS);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));

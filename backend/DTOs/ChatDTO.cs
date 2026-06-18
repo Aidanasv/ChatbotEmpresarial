@@ -20,6 +20,15 @@ namespace backend.DTOs
         public string Topic { get; set; } = string.Empty;
     }
 
+    public class ChatbotEmbedConfigDto
+    {
+        public int ChatbotId { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string PrimaryColor { get; set; } = string.Empty;
+        public bool ShowChatbotAvatar { get; set; }
+        public bool WidgetPosition { get; set; }
+    }
+
     public class ConversationMensageDto
     {
         public int Id { get; set; }

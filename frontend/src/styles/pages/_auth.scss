@@ -23,7 +23,7 @@
 
         .v-btn.active-toggle {
             background-color: rgb(var(--v-theme-surface));
-            color: $brand-primary;
+            color: rgb(var(--v-theme-primary));
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 
             .v-btn__content {
@@ -44,20 +44,20 @@
             transition: $transition-base;
 
             &.v-field--focused {
-                background-color: rgba($brand-primary, 0.05);
-                outline: 1px solid rgba($brand-primary, 0.2);
+                background-color: rgba(var(--v-theme-primary), 0.05);
+                outline: 1px solid rgba(var(--v-theme-primary), 0.2);
             }
         }
     }
 
     .v-btn.auth-submit-btn {
         letter-spacing: 0;
-        box-shadow: 0 6px 20px rgba($brand-primary, 0.25);
+        box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.25);
         transition: $transition-base;
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba($brand-primary, 0.35);
+            box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.35);
         }
 
         &:active {
@@ -69,12 +69,12 @@
 .v-theme--dark {
     .auth-toggle {
         .v-btn.active-toggle {
-            background-color: $bg-dark-alt;
+            background-color: rgb(var(--v-theme-surface-dark-alt));
             color: white;
         }
     }
 
-    .v-text-field .v-field {
-        background-color: rgba(255, 255, 255, 0.05) !important;
+    .auth-container .v-text-field .v-field {
+        background-color: rgba(255, 255, 255, 0.05);
     }
 }

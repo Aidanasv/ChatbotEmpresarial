@@ -29,7 +29,7 @@
     transition: $transition-base;
     
     &:hover {
-      color: $brand-primary;
+      color: rgba(var(--v-theme-primary), 0.92);
       background-color: rgba(var(--v-theme-primary), 0.05);
     }
   }
