@@ -13,6 +13,19 @@
       </div>
       <p class="text-medium-emphasis text-body-2 mb-6 ml-10">Sube archivos con información sobre tu empresa</p>
 
+      <v-alert v-if="!canUploadDocuments" type="warning" variant="tonal" class="ml-md-10 mb-6">
+        Tu plan no permite subir documentos. Solo podrás revisar los archivos existentes.
+      </v-alert>
+
+      <v-alert v-else-if="documentUploadLimit !== null" type="info" variant="tonal" class="ml-md-10 mb-6">
+        <span v-if="hasFiniteDocumentLimit && remainingDocumentSlots > 0">
+          Puedes subir hasta {{ documentUploadLimit }} documentos. Te quedan {{ remainingDocumentSlots }} cupos.
+        </span>
+        <span v-else>
+          Has alcanzado el maximo de {{ documentUploadLimit }} documentos permitidos por tu plan.
+        </span>
+      </v-alert>
+
       <div class="ml-md-10">
         <v-file-input
           v-model="chosenFiles"
@@ -24,6 +37,7 @@
           bg-color="grey-lighten-5"
           class="rounded-lg"
           show-size
+          :disabled="!canUploadDocuments || remainingDocumentSlots === 0"
           @update:model-value="handleFileSelect"
         ></v-file-input>
 
@@ -34,7 +48,14 @@
             </template>
             <v-list-item-title class="font-weight-medium">{{ doc.name }}</v-list-item-title>
             <template v-slot:append>
-              <v-btn icon="mdi-delete-outline" variant="text" color="error" density="comfortable" @click="removeDocument(index)"></v-btn>
+              <v-btn
+                icon="mdi-delete-outline"
+                variant="text"
+                color="error"
+                density="comfortable"
+                :disabled="!canUploadDocuments"
+                @click="removeDocument(index)"
+              ></v-btn>
             </template>
           </v-list-item>
         </v-list>
@@ -154,7 +175,9 @@ const props = defineProps<{
   modelValue: {
     faqs: { id: number | null, question: string, answer: string, createdAt: string | null, updatedAt: string | null }[],
     documents: { name: string, id?: string, createdAt?: string }[]
-  }
+  },
+  canUploadDocuments?: boolean,
+  documentUploadLimit?: number | null
 }>()
 
 const emit = defineEmits(['update:modelValue', 'update:pending-files', 'update:deleted-document-ids'])
@@ -164,11 +187,27 @@ const chosenFiles = ref<File[]>([])
 const deletedDocumentIds = ref<string[]>([]) // Track IDs of documents to delete from corpus
 
 const documents = computed(() => props.modelValue.documents)
+const canUploadDocuments = computed(() => props.canUploadDocuments ?? true)
+const hasFiniteDocumentLimit = computed(() => props.documentUploadLimit !== null && props.documentUploadLimit !== undefined)
+const remainingDocumentSlots = computed(() => {
+  if (props.documentUploadLimit === null || props.documentUploadLimit === undefined) {
+    return 0
+  }
+
+  return Math.max(props.documentUploadLimit - documents.value.length, 0)
+})
 
 const handleFileSelect = (files: File | File[] | null) => {
+  if (!canUploadDocuments.value) return
+  if (remainingDocumentSlots.value === 0) return
+
   if (!files) return
   const fileArray = Array.isArray(files) ? files : [files]
   if (fileArray.length === 0) return
+
+  if (remainingDocumentSlots.value !== null && fileArray.length > remainingDocumentSlots.value) {
+    return
+  }
 
   const pendingEntries = fileArray.map(file => ({
     tempId: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

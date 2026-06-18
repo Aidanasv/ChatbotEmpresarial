@@ -24,7 +24,7 @@ namespace backend.Services
             var username = GetRequiredSetting("SMTP__USERNAME", "Smtp:Username");
             var password = GetRequiredSetting("SMTP__PASSWORD", "Smtp:Password");
             var fromAddress = GetSetting("SMTP__FROM", "Smtp:From", username);
-            var fromName = GetSetting("SMTP__FROM_NAME", "Smtp:FromName", "BotForge");
+            var fromName = GetSetting("SMTP__FROM_NAME", "Smtp:FromName", "BIA");
 
             using var message = new MailMessage();
             message.From = new MailAddress(fromAddress, fromName);

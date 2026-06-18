@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { CompanySetup, PersonalitySetup, AppearanceSetup, SetUpState, CompanySetupResponse, KnowledgeSetup } from '@/types/setup'
 import axios from 'axios'
 import { useUiStore } from './useUiStore'
+import { hasSubscriptionFeature } from '@/utils/subscriptionPermissions'
 
 export const useSetupStore = defineStore('setup', {
     state: (): SetUpState => ({
@@ -207,6 +208,48 @@ export const useSetupStore = defineStore('setup', {
                 );  
                 throw error;
             }
+        },
+
+        async getCurrentSubscriptionLimits() {
+            try {
+                const response = await axios.get<{ subscriptionId: number; maxUsers: number }>('http://localhost:5267/api/setup/company/subscription', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data;
+            } catch (error) {
+                console.error('Error fetching current subscription limits:', error);
+                useUiStore().showError(
+                    'Ocurrio un error al cargar los limites de tu suscripcion. Por favor, intentalo de nuevo.',
+                    'Error al cargar',
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async getCurrentSubscriptionFeatures(companyId?: number) {
+            try {
+                const response = await axios.get<{ companyId: number, features: string[] }>('http://localhost:5267/api/setup/company/subscription/features', {
+                    params: companyId ? { companyId } : undefined,
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.features ?? [];
+            } catch (error) {
+                console.error('Error fetching current subscription features:', error);
+                useUiStore().showError(
+                    'Ocurrio un error al cargar las caracteristicas de tu suscripcion. Por favor, intentalo de nuevo.',
+                    'Error al cargar',
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async canUseCurrentSubscriptionFeature(requiredFeature: string, companyId?: number) {
+            const features = await this.getCurrentSubscriptionFeatures(companyId);
+            return hasSubscriptionFeature(features, requiredFeature);
         },
 
         async updateCompanySubscription(subscriptionId: number) {

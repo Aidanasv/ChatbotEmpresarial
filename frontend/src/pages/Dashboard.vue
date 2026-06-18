@@ -28,11 +28,14 @@
           <v-list-subheader class="text-caption font-weight-bold text-uppercase">Configuración</v-list-subheader>
 
           <v-list-item to="/dashboard/knowledge" prepend-icon="mdi-book-open-variant" title="Conocimiento" rounded="lg"
-            color="primary"></v-list-item>
+            color="primary">
+          </v-list-item>
           <v-list-item to="/dashboard/personality" prepend-icon="mdi-account-voice" title="Personalidad" rounded="lg"
-            color="primary"></v-list-item>
+            color="primary">
+          </v-list-item>
           <v-list-item to="/dashboard/appearance" prepend-icon="mdi-palette-outline" title="Apariencia" rounded="lg"
-            color="primary"></v-list-item>
+            color="primary">
+          </v-list-item>
           <v-list-item to="/dashboard/company" prepend-icon="mdi-cog-outline" title="Perfil" rounded="lg"
             color="primary"></v-list-item>
         </template>
@@ -47,16 +50,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useDisplay } from 'vuetify'
 import { useUiStore } from '@/stores/useUiStore'
+import { useSetupStore } from '@/stores/useSetupStore'
 
 const authStore = useAuthStore()
+const setupStore = useSetupStore()
 const uiStore = useUiStore()
 const { mdAndDown } = useDisplay()
 
 const isMobile = computed(() => mdAndDown.value)
+const currentSubscriptionFeatures = ref<string[]>([])
 
 watch(isMobile, (mobile) => {
   uiStore.setDashboardDrawer(!mobile)
@@ -64,5 +70,13 @@ watch(isMobile, (mobile) => {
 
 const normalizedRole = computed(() => (authStore.role || '').toLowerCase())
 const isSuperAdmin = computed(() => normalizedRole.value === 'superadmin')
+
+onMounted(async () => {
+  if (isSuperAdmin.value || !authStore.companyId) {
+    return
+  }
+
+  currentSubscriptionFeatures.value = await setupStore.getCurrentSubscriptionFeatures(Number(authStore.companyId))
+})
 
 </script>

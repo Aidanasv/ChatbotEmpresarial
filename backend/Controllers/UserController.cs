@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 
 namespace backend.Controllers
 {
@@ -12,10 +13,12 @@ namespace backend.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ISubscriptionPermissionService _subscriptionPermissionService;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService)
         {
             _context = context;
+            _subscriptionPermissionService = subscriptionPermissionService;
         }
 
         [Authorize(Roles = "Admin")]
@@ -88,6 +91,14 @@ namespace backend.Controllers
         {
             var companyId = GetCompanyIdFromToken();
             if (companyId == null) return Unauthorized();
+
+            var maxUsers = await _subscriptionPermissionService.GetCompanyMaxUsersAsync(companyId.Value);
+            var currentUsersCount = await _context.Users.CountAsync(user => user.CompanyId == companyId.Value);
+
+            if (maxUsers > 0 && currentUsersCount >= maxUsers)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, $"Tu plan permite un maximo de {maxUsers} usuarios.");
+            }
 
             var user = new User
             {

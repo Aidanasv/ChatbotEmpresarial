@@ -21,6 +21,16 @@
       {{ successMessage }}
     </v-alert>
 
+    <v-alert
+      v-if="!isSuperAdmin"
+      type="info"
+      variant="tonal"
+      class="mb-6"
+    >
+      Todos los planes incluyen acceso al chatbot. Las diferencias entre planes aplican a lectura de URL,
+      documentacion, personalizacion y soporte tecnico.
+    </v-alert>
+
     <v-row class="mb-2">
       <v-col v-for="plan in subscriptions" :key="plan.id" cols="12" md="4">
         <SubscriptionPlanCard :plan="plan" :is-most-popular="plan.id === mostPopularPlanId"
@@ -64,7 +74,7 @@
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field v-model.number="form.price" label="Precio mensual" type="number" min="0" variant="outlined"
-                rounded="lg" prefix="$" />
+                rounded="lg" prefix="€" />
             </v-col>
             <v-col cols="12">
               <v-text-field v-model.number="form.maxUsers" label="Usuarios máximos" type="number" min="1"
@@ -109,6 +119,7 @@ const successMessage = ref('')
 const dialogOpen = ref(false)
 const editingPlanId = ref<number | null>(null)
 const selectedSubscriptionId = ref<number | null>(null)
+const currentSubscriptionFeatures = ref<string[]>([])
 const featuresText = ref('')
 const form = reactive<UpsertSubscriptionPayload>({
   name: '',
@@ -134,7 +145,7 @@ const mostPopularPlanId = computed(() => {
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EUR',
     maximumFractionDigits: value % 1 === 0 ? 0 : 2
   }).format(value)
 }
@@ -185,6 +196,7 @@ const fetchSubscriptions = async () => {
 const fetchCurrentSubscription = async () => {
   try {
     selectedSubscriptionId.value = await setupStore.getCurrentSubscription()
+    currentSubscriptionFeatures.value = await setupStore.getCurrentSubscriptionFeatures()
   } catch (error) {
     console.error('Error loading current subscription:', error)
     errorMessage.value = 'No se pudo cargar tu suscripción actual.'

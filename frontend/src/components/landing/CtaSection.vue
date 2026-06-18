@@ -8,7 +8,7 @@
           </h2>
 
           <p class="text-h6 font-weight-regular mb-8 cta-subtitle">
-            Únete a cientos de empresas que ya usan BotForge para automatizar sus conversaciones.
+            Únete a cientos de empresas que ya usan BIA para automatizar sus conversaciones.
           </p>
 
           <v-btn size="x-large" rounded="lg" elevation="2" class="text-none font-weight-bold px-8 cta-btn"

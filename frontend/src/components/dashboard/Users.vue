@@ -8,12 +8,27 @@
       </div>
 
       <div class="mt-4 mt-md-0 d-flex gap-3">
-        <v-btn color="primary" prepend-icon="mdi-plus" class="text-none font-weight-bold" elevation="0"
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          class="text-none font-weight-bold"
+          elevation="0"
+          :disabled="!canCreateUser"
           @click="openCreateModal">
           Añadir Usuario
         </v-btn>
       </div>
     </div>
+
+    <v-alert v-if="maxUsers !== null" :type="canCreateUser ? 'info' : 'warning'" variant="tonal" class="mb-6">
+      <span v-if="canCreateUser">
+        Tu plan permite {{ maxUsers }} usuarios y actualmente tienes {{ total }}.
+        Te quedan {{ remainingUserSlots }} cupos.
+      </span>
+      <span v-else>
+        Has alcanzado el máximo de {{ maxUsers }} usuarios permitido por tu plan.
+      </span>
+    </v-alert>
 
     <v-card class="rounded-xl border dash-card" elevation="0">
 
@@ -116,12 +131,14 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/useUserStore'
+import { useSetupStore } from '@/stores/useSetupStore'
 import type { User } from '@/types/User'
 
 import CreateUserModal from '@/components/setup/UserForm.vue'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 
 const userStore = useUserStore()
+const setupStore = useSetupStore()
 const { userList, total } = storeToRefs(userStore)
 
 const isLoading = ref(true)
@@ -134,12 +151,21 @@ const isCreateModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const userToDeleteId = ref<number | null>(null)
 const isDeleting = ref(false)
+const maxUsers = ref<number | null>(null)
 
 const selectedUser = ref<Record<string, any> | undefined>(undefined)
 let searchDebounce: ReturnType<typeof setTimeout> | null = null
 
 const filteredUsers = computed(() => userList.value)
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const remainingUserSlots = computed(() => {
+  if (maxUsers.value === null) {
+    return 0
+  }
+
+  return Math.max(maxUsers.value - total.value, 0)
+})
+const canCreateUser = computed(() => maxUsers.value !== null && total.value < maxUsers.value)
 
 const normalizeRoleFilter = (value: string) => {
   switch (value) {
@@ -165,6 +191,10 @@ const fetchUsers = async () => {
 }
 
 const openCreateModal = () => {
+  if (!canCreateUser.value) {
+    return
+  }
+
   selectedUser.value = undefined
   isCreateModalOpen.value = true
 }
@@ -244,6 +274,9 @@ const formatDate = (dateString: Date | string) => {
 
 onMounted(async () => {
   try {
+    const subscriptionLimits = await setupStore.getCurrentSubscriptionLimits()
+    maxUsers.value = subscriptionLimits.maxUsers
+
     await fetchUsers()
   } catch (error) {
     console.error('Error al cargar la vista de usuarios:', error)

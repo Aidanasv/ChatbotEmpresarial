@@ -9,7 +9,7 @@
         <v-avatar color="primary" size="30" class="mr-2">
           <v-icon size="16" color="white">mdi-message-processing</v-icon>
         </v-avatar>
-        <span class="text-subtitle-2 font-weight-bold navbar-logo-text d-none d-md-inline">BotForge</span>
+        <span class="text-subtitle-2 font-weight-bold navbar-logo-text d-none d-md-inline">BIA</span>
       </div>
 
       <v-spacer></v-spacer>
@@ -21,7 +21,7 @@
             </v-avatar>
             <div class="d-flex flex-column">
               <span class="text-subtitle-1 font-weight-bold navbar-logo-text">{{ companyBrandName }}</span>
-              <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BotForge</span>
+              <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BIA</span>
             </div>
           </v-btn>
         </template>
@@ -46,7 +46,7 @@
         </v-avatar>
         <div class="d-flex flex-column">
           <span class="text-subtitle-1 font-weight-bold navbar-logo-text">{{ companyBrandName }}</span>
-          <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BotForge</span>
+          <span class="text-caption text-medium-emphasis navbar-brand-subtitle">Plataforma BIA</span>
         </div>
       </div>
 
@@ -113,7 +113,7 @@ const showDrawerToggle = computed(() => authStore.isAuthenticated && isDashboard
 
 const companyBrandName = computed(() => {
   if (!authStore.isAuthenticated) {
-    return 'BotForge'
+    return 'BIA'
   }
 
   const configuredCompanyName = setupStore.companySetup.companyName?.trim()
@@ -122,7 +122,7 @@ const companyBrandName = computed(() => {
   }
 
   if ((authStore.role || '').toLowerCase() === 'superadmin') {
-    return 'BotForge Admin'
+    return 'BIA Admin'
   }
 
   return 'Mi Empresa'

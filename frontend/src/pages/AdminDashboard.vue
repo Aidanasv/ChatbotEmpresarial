@@ -2,7 +2,7 @@
     <v-container fluid class="pa-6 pa-md-8">
         <div class="mb-8">
             <h1 class="text-h4 font-weight-bold mb-2">Resumen global</h1>
-            <p class="text-medium-emphasis">Vision general de la plataforma BotForge</p>
+            <p class="text-medium-emphasis">Vision general de la plataforma BIA</p>
         </div>
 
         <KpiCardsGrid :items="cards" :is-loading="isLoading" row-class="mb-2" />

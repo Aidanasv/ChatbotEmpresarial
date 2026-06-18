@@ -8,7 +8,7 @@
           <v-icon color="white" size="22">mdi-robot</v-icon>
         </v-avatar>
         <div class="text-left">
-          <p class="text-subtitle-2 font-weight-bold mb-0">Asistente BotForge</p>
+          <p class="text-subtitle-2 font-weight-bold mb-0">Asistente BIA</p>
           <div class="d-flex align-center">
             <span class="status-indicator mr-1"></span>
             <span class="text-caption text-medium-emphasis">En línea</span>

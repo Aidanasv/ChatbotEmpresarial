@@ -1,6 +1,8 @@
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
+using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using GoogleCloud.VertexAI;
@@ -18,14 +20,20 @@ namespace backend.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ISubscriptionPermissionService _subscriptionPermissionService;
         private readonly int _maxFileSize = 10 * 1024 * 1024; // 10 MB
         private static readonly ConcurrentDictionary<int, CorpusRebuildStatusResponse> _rebuildStatusByCompany = new();
 
-        public DocumentSourcesController(AppDbContext context, IConfiguration configuration, IServiceScopeFactory scopeFactory)
+        public DocumentSourcesController(
+            AppDbContext context,
+            IConfiguration configuration,
+            IServiceScopeFactory scopeFactory,
+            ISubscriptionPermissionService subscriptionPermissionService)
         {
             _context = context;
             _configuration = configuration;
             _scopeFactory = scopeFactory;
+            _subscriptionPermissionService = subscriptionPermissionService;
         }
 
         private static VertexAiRagClient CreateRagClient()
@@ -196,6 +204,25 @@ namespace backend.Controllers
             if (files == null || files.Count == 0)
             {
                 return BadRequest("No files uploaded.");
+            }
+
+            var documentUploadLimit = await _subscriptionPermissionService.GetDocumentUploadLimitAsync(companyId.Value);
+            var currentDocumentCount = await _context.DocumentSources.CountAsync(d => d.CompanyId == companyId.Value);
+            var incomingFilesCount = files.Count(file => file.Length > 0);
+
+            if (documentUploadLimit.HasValue)
+            {
+                var availableSlots = Math.Max(documentUploadLimit.Value - currentDocumentCount, 0);
+                if (incomingFilesCount > availableSlots)
+                {
+                    if (documentUploadLimit.Value == 0)
+                    {
+                        return StatusCode(StatusCodes.Status403Forbidden,
+                            $"Tu suscripcion no permite subida de documentacion. Requiere la caracteristica '{SubscriptionFeatureCatalog.LimitedDocumentUpload}' o '{SubscriptionFeatureCatalog.UnlimitedDocumentUpload}'.");
+                    }
+
+                    return BadRequest($"Tu plan permite un maximo de {documentUploadLimit.Value} documentos. Actualmente tienes {currentDocumentCount} y solo puedes subir {availableSlots} mas.");
+                }
             }
 
             var ragClient = CreateRagClient();

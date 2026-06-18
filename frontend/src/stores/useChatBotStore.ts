@@ -5,7 +5,9 @@ import { useUiStore } from "./useUiStore";
 
 export const useChatBotStore = defineStore("chatbot", {
     state: (): ChatbotState => ({
-        conversations: [],
+        conversations: [
+            { id: 1, role: "bot", content: "¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?", time: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) }
+        ],
         isLoading: false,
         error: null,
         chatbotId: null,

@@ -17,7 +17,10 @@ namespace backend.Controllers
         private readonly IConfiguration _configuration;
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ChatbotController(AppDbContext context, IConfiguration configuration, IServiceScopeFactory scopeFactory)
+        public ChatbotController(
+            AppDbContext context,
+            IConfiguration configuration,
+            IServiceScopeFactory scopeFactory)
         {
             _context = context;
             _configuration = configuration;

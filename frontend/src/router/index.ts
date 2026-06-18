@@ -82,13 +82,13 @@ const router = createRouter({
           path: 'admin',
           name: 'dashboard-admin',
           component: AdminDashboardView,
-          meta: { title: 'Resumen global', subtitle: 'BotForge Admin' }
+          meta: { title: 'Resumen global', subtitle: 'BIA Admin' }
         },
         {
           path: 'admin/subscriptions',
           name: 'dashboard-admin-subscriptions',
           component: AdminSubscriptionsView,
-          meta: { title: 'Suscripciones', subtitle: 'BotForge Admin' }
+          meta: { title: 'Suscripciones', subtitle: 'BIA Admin' }
         },
         {
           path: 'subscriptions',
@@ -100,7 +100,7 @@ const router = createRouter({
           path: 'admin/company/:companyId',
           name: 'dashboard-admin-company-details',
           component: ViewDetailsCompany,
-          meta: { title: 'Detalle de empresa', subtitle: 'BotForge Admin' }
+          meta: { title: 'Detalle de empresa', subtitle: 'BIA Admin' }
         },
         {
           path: 'try-chatbot',

@@ -7,7 +7,7 @@
       <div class="footer-text">{{ companyBrandName }}</div>
     </div>
     <div class="footer-text text-medium-emphasis">
-      © 2026 BotForge. Todos los derechos reservados.
+      © 2026 BIA. Todos los derechos reservados.
     </div>
   </v-footer>
 </template>
@@ -22,7 +22,7 @@ const setupStore = useSetupStore()
 
 const companyBrandName = computed(() => {
   if (!authStore.isAuthenticated) {
-    return 'BotForge'
+    return 'BIA'
   }
 
   const configuredCompanyName = setupStore.companySetup.companyName?.trim()
@@ -31,7 +31,7 @@ const companyBrandName = computed(() => {
   }
 
   if ((authStore.role || '').toLowerCase() === 'superadmin') {
-    return 'BotForge Admin'
+    return 'BIA Admin'
   }
 
   return 'Mi Empresa'

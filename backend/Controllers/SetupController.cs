@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
+using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +16,12 @@ namespace backend.Controllers
     public class SetupController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ISubscriptionPermissionService _subscriptionPermissionService;
 
-        public SetupController(AppDbContext context)
+        public SetupController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService)
         {
             _context = context;
+            _subscriptionPermissionService = subscriptionPermissionService;
         }
 
         [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SuperAdmin))]
@@ -182,7 +186,9 @@ namespace backend.Controllers
                 return Forbid("El usuario no tiene permiso para editar esta empresa.");
             }
 
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            var company = await _context.Companies
+                .Include(c => c.Subscription)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
 
             if (company == null)
             {
@@ -234,13 +240,54 @@ namespace backend.Controllers
                 return Forbid("El usuario no tiene una empresa asignada.");
             }
 
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            var company = await _context.Companies
+                .Include(c => c.Subscription)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
             if (company == null)
             {
                 return NotFound("Empresa no encontrada.");
             }
 
-            return Ok(new { subscriptionId = company.SubscriptionId });
+            return Ok(new
+            {
+                subscriptionId = company.SubscriptionId,
+                maxUsers = company.Subscription?.MaxUsers ?? 0
+            });
+        }
+
+        [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SuperAdmin))]
+        [HttpGet("company/subscription/features")]
+        public async Task<IActionResult> GetCompanySubscriptionFeatures([FromQuery] int? companyId = null)
+        {
+            int? targetCompanyId;
+
+            if (User.IsInRole(nameof(Role.SuperAdmin)))
+            {
+                targetCompanyId = companyId;
+            }
+            else
+            {
+                targetCompanyId = GetCompanyIdFromToken();
+            }
+
+            if (targetCompanyId == null)
+            {
+                return BadRequest("Debes indicar una empresa valida.");
+            }
+
+            var companyExists = await _context.Companies.AnyAsync(c => c.Id == targetCompanyId.Value);
+            if (!companyExists)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            var features = await _subscriptionPermissionService.GetCompanyFeaturesAsync(targetCompanyId.Value);
+
+            return Ok(new
+            {
+                companyId = targetCompanyId.Value,
+                features
+            });
         }
 
         [Authorize(Roles = nameof(Role.Admin))]
@@ -362,6 +409,15 @@ namespace backend.Controllers
             if (company == null)
             {
                 return NotFound("Empresa no encontrada.");
+            }
+
+            var canCustomizeAppearance = await _subscriptionPermissionService.CompanyHasFeatureAsync(
+                company.Id,
+                SubscriptionFeatureCatalog.ColorAndAvatarCustomization);
+
+            if (!canCustomizeAppearance)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "Tu plan no permite cambiar la apariencia del widget.");
             }
 
             var chatbotSettings = company.ChatbotSettings;
