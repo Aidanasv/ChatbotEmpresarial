@@ -53,7 +53,6 @@ namespace backend.Controllers
             .Select(m => (double?)_context.Messages
                 .Where(resp => resp.ConversationId == m.ConversationId && resp.Role == RoleInConversation.Bot && resp.CreatedAt > m.CreatedAt)
                 .OrderBy(resp => resp.CreatedAt)
-                // Usamos EF.Functions.DateDiffSeconds para que se traduzca correctamente a SQL (ej: DATEDIFF o TIMESTAMPDIFF)
                 .Select(resp => EF.Functions.DateDiffSecond(m.CreatedAt, resp.CreatedAt))
                 .FirstOrDefault())
             .Average() ?? 0.0;
@@ -133,7 +132,6 @@ namespace backend.Controllers
                     SubscriptionName = c.Subscription != null ? c.Subscription.Name : null,
                     SubscriptionPrice = c.Subscription != null ? (decimal?)c.Subscription.Price : null,
                     UsersCount = c.Users.Count,
-                    // Contamos de forma segura por si una empresa no tiene ChatbotSettings
                     ConversationsCount = c.ChatbotSettings != null ? c.ChatbotSettings.Conversations.Count() : 0,
                     Status = c.Status,
                     c.CreatedAt

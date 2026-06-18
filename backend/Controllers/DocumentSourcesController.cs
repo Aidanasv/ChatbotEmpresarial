@@ -89,7 +89,6 @@ namespace backend.Controllers
                 string? finalOperationRaw = rawResponse;
                 bool done = false;
 
-                // CreateRagCorpus devuelve una operación async. Esperamos un poco para asegurar que luego aparezca en listados.
                 for (var i = 0; i < 10; i++)
                 {
                     finalOperationRaw = await ragClient.GetOperationAsync(location, operationName);
@@ -395,7 +394,7 @@ namespace backend.Controllers
             }
             catch
             {
-                // Si falla la eliminacion en corpus, seguimos para reportar por archivo sin tumbar toda la peticion.
+            
             }
 
             var failed = new List<object>();
@@ -592,7 +591,7 @@ namespace backend.Controllers
                 }
                 catch (HttpRequestException ex) when (ex.Message.Contains(((int)HttpStatusCode.NotFound).ToString(), StringComparison.OrdinalIgnoreCase))
                 {
-                    // Idempotente: si no existe, continuamos con la recreación.
+                
                 }
             }
 
@@ -634,7 +633,7 @@ namespace backend.Controllers
             var dbUriSet = new HashSet<string>(dbUris, StringComparer.Ordinal);
             var bucketUris = await ragClient.ListGcsUrisByPrefixAsync(bucketName, folderPrefix);
 
-            // Si hay objetos en bucket que ya no existen en BD, los eliminamos para evitar reindexar archivos viejos.
+        
             var staleBucketUris = bucketUris
                 .Where(uri => !dbUriSet.Contains(uri))
                 .ToList();
@@ -654,7 +653,6 @@ namespace backend.Controllers
             var finalBucketUris = await ragClient.ListGcsUrisByPrefixAsync(bucketName, folderPrefix);
             var finalBucketUriSet = new HashSet<string>(finalBucketUris, StringComparer.Ordinal);
 
-            // Importamos solo URIs registradas en BD y existentes en bucket.
             return dbUris
                 .Where(uri => finalBucketUriSet.Contains(uri))
                 .ToList();

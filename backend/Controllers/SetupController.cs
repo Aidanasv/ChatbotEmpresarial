@@ -157,7 +157,6 @@ namespace backend.Controllers
             }
         }
 
-        // Endpoint para actualizar solo los datos de la empresa
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpPost("company")]
         public async Task<IActionResult> SaveCompanySetup(CompanySetupDto companySetup)
