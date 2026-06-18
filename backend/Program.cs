@@ -17,11 +17,9 @@ if (builder.Environment.IsDevelopment())
     Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", GOOGLE_APPLICATION_CREDENTIALS);
 
 }
-Console.WriteLine($"Connection String: {connectionString}");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
-
+    options.UseMySql(connectionString, ServerVersion.Parse("8.0.30-mysql")));
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<ISubscriptionPermissionService, SubscriptionPermissionService>();
 
