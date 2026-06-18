@@ -2,6 +2,7 @@ import type { ConversationPanelData } from "@/types/Analytics";
 import type { ConversationMessage, ConversationState } from "@/types/Conversations"
 import axios from "axios";
 import { defineStore } from "pinia";
+import { useUiStore } from "./useUiStore";
 
 export const useConversationsStore = defineStore('conversations', {
     state: (): ConversationState => ({
@@ -22,6 +23,11 @@ export const useConversationsStore = defineStore('conversations', {
                 this.offset = offset;
             } catch (error) {
                 console.error('Error fetching conversation data:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al obtener los datos de las conversaciones. Por favor, inténtalo de nuevo.',
+                    "Error al cargar conversaciones",
+                    3000
+                );
             }
         },
         async getConversationMessages(conversationId: number) {
@@ -33,6 +39,11 @@ export const useConversationsStore = defineStore('conversations', {
                 this.conversationMessage = data;
             } catch (error) {
                 console.error('Error fetching conversation messages:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al cargar los mensajes de la conversación. Por favor, inténtalo de nuevo.',
+                    "Error al cargar mensajes",
+                    3000
+                );
             }
         }
     }

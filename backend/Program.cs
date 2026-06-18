@@ -1,4 +1,5 @@
 using backend.Data;
+using backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -9,10 +10,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("BBDD");
 var googleApiKey = builder.Configuration["GOOGLE_API_KEY"];
+var GOOGLE_APPLICATION_CREDENTIALS = builder.Configuration["GOOGLE_APPLICATION_CREDENTIALS"];
 Environment.SetEnvironmentVariable("GOOGLE_API_KEY", googleApiKey);
+Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", GOOGLE_APPLICATION_CREDENTIALS);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<ISubscriptionPermissionService, SubscriptionPermissionService>();
 
 builder.Services.AddCors(options =>
 {

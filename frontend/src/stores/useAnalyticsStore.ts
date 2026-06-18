@@ -1,6 +1,7 @@
 import type { AnalyticsState, ConversationPanelData } from "@/types/Analytics";
 import axios from "axios";
 import { defineStore } from "pinia";
+import { useUiStore } from "./useUiStore";
 
 export const useAnalyticsStore = defineStore('analytics', {
     state: (): AnalyticsState => ({
@@ -22,9 +23,14 @@ export const useAnalyticsStore = defineStore('analytics', {
                 this.averageMessagesByConversation = data.averageMessagesByConversation;
                 this.averageResponseTime = data.averageResponseTime;
             } catch (error) {
-                console.error('Error fetching analytics data:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al cargar las métricas. Por favor, inténtalo de nuevo.',
+                    "Error al cargar analíticas",
+                    3000
+                );
             }
         },
+
         async getConversationData(limit: number = 5, offset: number = 0) {
             try {
                 const response = await axios.get<ConversationPanelData[]>(`http://localhost:5267/api/analytics/conversations?limit=${limit}&offset=${offset}`, {
@@ -33,7 +39,11 @@ export const useAnalyticsStore = defineStore('analytics', {
                 const data: ConversationPanelData[] = response.data;
                 this.conversationPanelData = data;
             } catch (error) {
-                console.error('Error fetching conversation data:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al obtener los datos de las conversaciones. Por favor, inténtalo más tarde.',
+                    "Error de conexión",
+                    3000
+                );
             }
         }
     }

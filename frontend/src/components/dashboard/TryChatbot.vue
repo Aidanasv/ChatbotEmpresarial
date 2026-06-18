@@ -1,144 +1,111 @@
 <template>
-    <v-container fluid class="pa-6 pa-md-8">
-        <v-card class="dash-card rounded-xl" flat>
-            <div class="pa-6 d-flex align-center justify-space-between flex-wrap ga-3">
-                <div class="d-flex align-center">
-                    <v-avatar color="primary" variant="tonal" size="42" class="mr-3">
-                        <v-icon>mdi-robot-outline</v-icon>
-                    </v-avatar>
-                    <div>
-                        <h2 class="text-h6 font-weight-bold mb-0">Modo prueba</h2>
-                        <p class="text-body-2 text-medium-emphasis mb-0">Simula conversaciones con tu chatbot</p>
-                    </div>
-                </div>
+    <v-container fluid class="pa-6 pa-md-8 min-vh-100">
 
-                <div class="d-flex align-center ga-2">
-                    <v-chip size="small" variant="outlined" color="default" class="font-weight-bold">
-                        <v-icon start size="small">mdi-star-four-points-circle-outline</v-icon>
-                        gpt-4o-mini
-                    </v-chip>
-                    <v-btn variant="outlined" rounded="lg" class="text-none" prepend-icon="mdi-refresh" @click="resetChat">
-                        Reiniciar
-                    </v-btn>
-                </div>
-            </div>
-            <v-divider></v-divider>
-
-            <div v-if="!hasConversation" class="pa-6">
-                <v-card variant="outlined" class="pa-5 rounded-lg" max-width="640">
-                    <h3 class="text-subtitle-1 font-weight-bold mb-1">Datos del cliente</h3>
-                    <p class="text-body-2 text-medium-emphasis mb-4">Completa estos datos para iniciar la conversacion de prueba.</p>
-
-                    <v-form @submit.prevent="startConversation">
-                        <v-text-field
-                            v-model="customerForm.name"
-                            label="Nombre"
-                            variant="outlined"
-                            class="mb-3"
-                            :rules="nameRules"
-                            required
-                        ></v-text-field>
-
-                        <v-text-field
-                            v-model="customerForm.email"
-                            label="Correo"
-                            type="email"
-                            variant="outlined"
-                            class="mb-3"
-                            :rules="emailRules"
-                            required
-                        ></v-text-field>
-
-                        <v-text-field
-                            v-model="customerForm.phone"
-                            label="Telefono"
-                            variant="outlined"
-                            class="mb-4"
-                            :rules="phoneRules"
-                            required
-                        ></v-text-field>
-
-                        <div class="d-flex justify-end">
-                            <v-btn type="submit" color="primary" class="text-none" :loading="chatbotStore.isLoading">
-                                Iniciar conversacion
-                            </v-btn>
+        <v-row class="ga-0" align="start">
+            <v-col cols="12" md="4" class="pr-md-4">
+                <v-card rounded="xl" elevation="1">
+                    <div class="pa-4 border-b d-flex align-center justify-space-between flex-wrap ga-2">
+                        <div>
+                            <h2 class="text-subtitle-1 font-weight-bold mb-1">Como embeber</h2>
+                            <p class="text-caption text-medium-emphasis mb-0">Fragmento listo para pegar.</p>
                         </div>
-                    </v-form>
+                        <v-btn variant="tonal" color="primary" size="small" class="text-none" @click="copyEmbedSnippet">
+                            {{ copyStatusText }}
+                        </v-btn>
+                    </div>
+
+                    <div class="pa-4" style="background: #0f172a; color: #e2e8f0; overflow-x: auto;">
+                        <pre
+                            style="margin: 0; white-space: pre; font-size: 11px; line-height: 1.45;"><code>{{ embedSnippet }}</code></pre>
+                    </div>
                 </v-card>
-            </div>
+            </v-col>
 
-            <template v-else>
-                <v-sheet class="pa-6 bg-grey-lighten-5 overflow-y-auto" min-height="420" max-height="calc(100vh - 280px)">
-                    <div v-for="message in messages" :key="message.id" class="mb-4">
-                        <div v-if="message.role === 'bot'" class="d-flex align-start">
-                            <v-avatar size="34" color="primary" variant="tonal" class="mr-3 mt-1">
-                                <v-icon size="18">mdi-robot-outline</v-icon>
-                            </v-avatar>
-                            <div>
-                                <v-sheet class="pa-3 px-4 rounded-xl rounded-be-lg text-body-2" border color="white" style="max-width: min(680px, 80vw); line-height: 1.45;">
-                                    {{ message.content }}
-                                </v-sheet>
-                                <div class="text-caption text-medium-emphasis mt-1">{{ message.time }}</div>
+            <v-col cols="12" md="8" class="pl-md-4">
+                <div class="d-flex justify-center">
+                    <div v-if="!hasConversation" style="width: 100%; max-width: 600px;">
+                        <v-card rounded="xl" class="pa-8" elevation="2">
+                            <div class="mb-8">
+                                <h2 class="text-h5 font-weight-bold mb-2">Datos del cliente</h2>
+                                <p class="text-body-2 text-medium-emphasis mb-0">Completa estos datos para iniciar la
+                                    conversacion de prueba</p>
                             </div>
-                        </div>
 
-                        <div v-else class="d-flex justify-end">
-                            <div class="text-right">
-                                <v-sheet class="pa-3 px-4 rounded-xl rounded-bs-lg text-body-2 text-white" color="primary" style="max-width: min(680px, 80vw); line-height: 1.45;">
-                                    {{ message.content }}
-                                </v-sheet>
-                                <div class="text-caption text-medium-emphasis mt-1">{{ message.time }}</div>
-                            </div>
-                        </div>
+                            <v-form @submit.prevent="startConversation" class="d-flex flex-column ga-4">
+                                <v-text-field v-model="customerForm.name" label="Nombre" variant="outlined"
+                                    :rules="nameRules" required>
+                                </v-text-field>
+
+                                <v-text-field v-model="customerForm.email" label="Correo electronico" type="email"
+                                    variant="outlined" :rules="emailRules" required>
+                                </v-text-field>
+
+                                <v-text-field v-model="customerForm.phone" label="Telefono" variant="outlined"
+                                    :rules="phoneRules" required>
+                                </v-text-field>
+
+                                <div class="d-flex justify-end pt-4">
+                                    <v-btn type="submit" color="primary" size="large" rounded="lg"
+                                        :loading="chatbotStore.isLoading" class="text-none font-weight-bold px-8">
+                                        Iniciar conversacion
+                                    </v-btn>
+                                </div>
+                            </v-form>
+                        </v-card>
                     </div>
-                </v-sheet>
 
-                <v-divider></v-divider>
-                <div class="pa-4">
-                    <v-text-field
-                        v-model="inputMessage"
-                        variant="outlined"
-                        placeholder="Escribe un mensaje para probar tu chatbot..."
-                        hide-details
-                        bg-color="white"
-                        class="try-input"
-                        @keyup.enter="sendMessage"
-                    >
-                        <template #append-inner>
-                            <v-btn
-                                icon="mdi-send"
-                                color="primary"
-                                size="small"
-                                variant="flat"
-                                :disabled="!inputMessage.trim() || chatbotStore.isLoading"
-                                :loading="chatbotStore.isLoading"
-                                @click="sendMessage"
-                            ></v-btn>
-                        </template>
-                    </v-text-field>
+                    <template v-else>
+                        <div class="d-flex justify-center align-start" style="width: 100%;">
+                            <WidgetChatbot :model-value="modelValue" :messages="messages"
+                                :onSendMessage="sendMessage" />
+                        </div>
+                    </template>
                 </div>
-            </template>
-        </v-card>
+            </v-col>
+        </v-row>
     </v-container>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import WidgetChatbot from './widgetChatbot.vue'
 import { useChatBotStore } from '@/stores/useChatBotStore'
 import type { Conversation } from '@/types/chatbot'
 import { useAuthStore } from '@/stores/useAuthStore'
+import { useSetupStore } from '@/stores/useSetupStore'
 
 const chatbotStore = useChatBotStore()
+const setupStore = useSetupStore()
 const authStore = useAuthStore()
 
 const messages = computed(() => chatbotStore.conversations)
 const hasConversation = computed(() => chatbotStore.conversationId !== null)
 const inputMessage = ref('')
+const copyStatusText = ref('Copiar codigo')
 const customerForm = ref({
     name: '',
     email: '',
     phone: ''
 })
+
+const embedChatbotId = computed(() => authStore.chatbotId ?? '18')
+const embedUrl = computed(() => `http://localhost:3000/my-chatbot/${embedChatbotId.value}`)
+const embedSnippet = computed(() => `.widget-frame {
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background-color: transparent;
+}
+
+<iframe
+    class="widget-frame"
+    title="Chatbot embebido"
+    src="${embedUrl.value}"
+    loading="lazy"
+    referrerpolicy="strict-origin-when-cross-origin"
+    allow="clipboard-write"
+></iframe>`)
 
 const nameRules = [
     (value: string) => !!value.trim() || 'El nombre es obligatorio'
@@ -180,14 +147,13 @@ const startConversation = async () => {
     await chatbotStore.initializeChatbot(payload)
 }
 
-const sendMessage = async () => {
-    const trimmed = inputMessage.value.trim()
+const sendMessage = async (text: string) => {
+    const trimmed = text.trim()
     if (!trimmed || !hasConversation.value) return
 
+
     chatbotStore.conversations.push({ id: Date.now(), role: 'user', content: trimmed, time: getTimeLabel() })
-    inputMessage.value = ''
     await chatbotStore.sendMenssage(trimmed)
-    
 }
 
 const resetChat = () => {
@@ -195,4 +161,24 @@ const resetChat = () => {
     chatbotStore.conversationId = null
     inputMessage.value = ''
 }
+
+const copyEmbedSnippet = async () => {
+    try {
+        await navigator.clipboard.writeText(embedSnippet.value)
+        copyStatusText.value = 'Copiado'
+    } catch {
+        copyStatusText.value = 'No se pudo copiar'
+    } finally {
+        setTimeout(() => {
+            copyStatusText.value = 'Copiar codigo'
+        }, 1500)
+    }
+}
+
+const modelValue = computed(() => ({
+    primaryColor: setupStore.appearanceSetup.primaryColor ?? '#536DFE',
+    showChatbotAvatar: setupStore.appearanceSetup.showChatbotAvatar ?? true,
+    widgetPosition: setupStore.appearanceSetup.widgetPosition ?? false,
+    title: setupStore.appearanceSetup.title ?? 'Asistente'
+}))
 </script>

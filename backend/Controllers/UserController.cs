@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
 
 namespace backend.Controllers
 {
@@ -12,21 +13,48 @@ namespace backend.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ISubscriptionPermissionService _subscriptionPermissionService;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService)
         {
             _context = context;
+            _subscriptionPermissionService = subscriptionPermissionService;
         }
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] UsersQueryDTO query)
         {
             var companyId = GetCompanyIdFromToken();
             if (companyId == null) return Unauthorized();
 
-            var users = await _context.Users
-                .Where(u => u.CompanyId == companyId)
+            var page = query.Page < 1 ? 1 : query.Page;
+            var pageSize = query.PageSize < 1 ? 10 : Math.Min(query.PageSize, 100);
+            var normalizedSearch = query.Search?.Trim();
+            var normalizedRole = query.Role?.Trim();
+
+            var usersQuery = _context.Users
+                .Where(u => u.CompanyId == companyId);
+
+            if (!string.IsNullOrWhiteSpace(normalizedSearch))
+            {
+                var searchPattern = normalizedSearch.ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.UserName.ToLower().Contains(searchPattern) ||
+                    u.Email.ToLower().Contains(searchPattern));
+            }
+
+            if (!string.IsNullOrWhiteSpace(normalizedRole) && !string.Equals(normalizedRole, "Todos", StringComparison.OrdinalIgnoreCase))
+            {
+                usersQuery = usersQuery.Where(u => u.Role.ToString() == normalizedRole);
+            }
+
+            var total = await usersQuery.CountAsync();
+
+            var users = await usersQuery
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(u => new
                 {
                     u.Id,
@@ -48,15 +76,29 @@ namespace backend.Controllers
                 CreatedAt = u.CreatedAt
             }).ToList();
 
-            return Ok(userDTOs);
+            return Ok(new UsersPagedResponseDTO
+            {
+                Items = userDTOs,
+                Total = total,
+                Page = page,
+                PageSize = pageSize
+            });
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDTO createUserDTO)
-        { 
+        {
             var companyId = GetCompanyIdFromToken();
             if (companyId == null) return Unauthorized();
+
+            var maxUsers = await _subscriptionPermissionService.GetCompanyMaxUsersAsync(companyId.Value);
+            var currentUsersCount = await _context.Users.CountAsync(user => user.CompanyId == companyId.Value);
+
+            if (maxUsers > 0 && currentUsersCount >= maxUsers)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, $"Tu plan permite un maximo de {maxUsers} usuarios.");
+            }
 
             var user = new User
             {
@@ -103,7 +145,7 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin")]    
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -117,8 +159,6 @@ namespace backend.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-        
-
         private int? GetCompanyIdFromToken()
         {
             var companyIdClaim = User.FindFirst("companyId");

@@ -338,6 +338,15 @@ namespace backend.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime?>("PasswordResetRequestedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("PasswordResetTokenExpiresAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("PasswordResetTokenHash")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -382,7 +391,7 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Conversation", b =>
                 {
                     b.HasOne("backend.Models.ChatbotSettings", "ChatbotSettings")
-                        .WithMany()
+                        .WithMany("Conversations")
                         .HasForeignKey("ChatbotSettingsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -415,7 +424,7 @@ namespace backend.Migrations
             modelBuilder.Entity("backend.Models.Message", b =>
                 {
                     b.HasOne("backend.Models.Conversation", "Conversation")
-                        .WithMany()
+                        .WithMany("Messages")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -432,6 +441,11 @@ namespace backend.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("backend.Models.ChatbotSettings", b =>
+                {
+                    b.Navigation("Conversations");
+                });
+
             modelBuilder.Entity("backend.Models.Company", b =>
                 {
                     b.Navigation("ChatbotSettings");
@@ -441,6 +455,11 @@ namespace backend.Migrations
                     b.Navigation("Faqs");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("backend.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("backend.Models.Subscription", b =>

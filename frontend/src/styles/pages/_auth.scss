@@ -3,8 +3,12 @@
 .auth-container {
     background-color: rgba(var(--v-theme-on-surface), 0.02);
 
+    .auth-wrapper {
+        width: min(100%, 560px);
+    }
+
     .auth-card {
-        max-width: 480px;
+        max-width: 560px;
         width: 100%;
         border: 1px solid rgba(var(--v-border-color), 0.05);
     }
@@ -18,12 +22,17 @@
     }
 
     .auth-toggle {
+        gap: 8px;
         background-color: rgba(var(--v-theme-on-surface), 0.05);
         border: 1px solid rgba(var(--v-border-color), 0.05);
 
+        .v-btn {
+            min-width: 0;
+        }
+
         .v-btn.active-toggle {
             background-color: rgb(var(--v-theme-surface));
-            color: $brand-primary;
+            color: rgb(var(--v-theme-primary));
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 
             .v-btn__content {
@@ -38,26 +47,36 @@
         }
     }
 
+    @media (max-width: 600px) {
+        .auth-wrapper {
+            width: 100%;
+        }
+
+        .auth-card {
+            max-width: 100%;
+        }
+    }
+
     .v-text-field {
         .v-field {
             border-radius: 12px;
             transition: $transition-base;
 
             &.v-field--focused {
-                background-color: rgba($brand-primary, 0.05);
-                outline: 1px solid rgba($brand-primary, 0.2);
+                background-color: rgba(var(--v-theme-primary), 0.05);
+                outline: 1px solid rgba(var(--v-theme-primary), 0.2);
             }
         }
     }
 
     .v-btn.auth-submit-btn {
         letter-spacing: 0;
-        box-shadow: 0 6px 20px rgba($brand-primary, 0.25);
+        box-shadow: 0 6px 20px rgba(var(--v-theme-primary), 0.25);
         transition: $transition-base;
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba($brand-primary, 0.35);
+            box-shadow: 0 8px 25px rgba(var(--v-theme-primary), 0.35);
         }
 
         &:active {
@@ -69,12 +88,12 @@
 .v-theme--dark {
     .auth-toggle {
         .v-btn.active-toggle {
-            background-color: $bg-dark-alt;
+            background-color: rgb(var(--v-theme-surface-dark-alt));
             color: white;
         }
     }
 
-    .v-text-field .v-field {
-        background-color: rgba(255, 255, 255, 0.05) !important;
+    .auth-container .v-text-field .v-field {
+        background-color: rgba(255, 255, 255, 0.05);
     }
 }

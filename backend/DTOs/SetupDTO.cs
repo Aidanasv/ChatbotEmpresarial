@@ -44,6 +44,11 @@ namespace backend.DTOs
         public KnowledgeSetupDto KnowledgeSetup { get; set; } = new KnowledgeSetupDto();
     }
 
+    public class UpdateCompanyStatusDto
+    {
+        public string Status { get; set; } = string.Empty;
+    }
+
     
     public class KnowledgeSetupDto
     {

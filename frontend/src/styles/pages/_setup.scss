@@ -1,14 +1,14 @@
 @use '../base/variables' as *;
 
 .setup-page-wrapper {
-  background-color: $bg-main;
+  background-color: rgb(var(--v-theme-background));
   min-height: 100vh;
 }
 
 .setup-container {
   .setup-card {
     max-width: 800px;
-    background-color: $bg-surface;
+    background-color: rgb(var(--v-theme-surface));
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.04);
   }
@@ -27,7 +27,7 @@
       border-radius: 18px;
 
       &.is-active {
-        background-color: $brand-primary;
+        background-color: rgb(var(--v-theme-primary));
         color: white;
       }
     }
@@ -40,7 +40,7 @@
       transition: $transition-base;
 
       &.is-filled {
-        background-color: $brand-primary;
+        background-color: rgb(var(--v-theme-primary));
       }
     }
   }
@@ -61,18 +61,18 @@
   .setup-input {
     .v-field {
       border-radius: 12px;
-      background-color: $bg-main;
+      background-color: rgb(var(--v-theme-background));
       border: 1px solid transparent;
       transition: $transition-base;
 
       &:hover {
-        background-color: $bg-hover;
+        background-color: rgb(var(--v-theme-surface-hover));
       }
 
       &.v-field--focused {
-        background-color: $bg-surface;
-        border-color: rgba($brand-primary, 0.4);
-        box-shadow: 0 0 0 4px rgba($brand-primary, 0.1);
+        background-color: rgb(var(--v-theme-surface));
+        border-color: rgba(var(--v-theme-primary), 0.4);
+        box-shadow: 0 0 0 4px rgba(var(--v-theme-primary), 0.1);
       }
     }
 
@@ -103,11 +103,11 @@
     }
 
     &.is-selected {
-      background-color: rgba($brand-primary, 0.05);
-      border-color: rgba($brand-primary, 0.5);
+      background-color: rgba(var(--v-theme-primary), 0.05);
+      border-color: rgba(var(--v-theme-primary), 0.5);
 
       .tone-title {
-        color: $brand-primary;
+        color: rgb(var(--v-theme-primary));
       }
     }
   }
@@ -171,6 +171,40 @@
     min-height: 150px;
   }
 
+  // Vista previa del widget
+  .preview-stage {
+    min-height: 280px;
+  }
+
+  .widget-window {
+    position: absolute;
+    bottom: 56px;
+    max-width: 200px;
+
+    &.widget-right { right: 0; }
+    &.widget-left  { left: 0; }
+  }
+
+  .widget-avatar-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .bot-bubble,
+  .user-bubble {
+    max-width: 80%;
+    line-height: 1.4;
+  }
+
+  .fab-row {
+    position: absolute;
+    bottom: 0;
+
+    &.fab-right { right: 0; }
+    &.fab-left  { left: 0; }
+  }
+
   // Conocimiento
   .upload-zone {
     border: 2px dashed rgba(var(--v-border-color), 0.2);
@@ -178,11 +212,11 @@
     transition: $transition-base;
 
     &:hover {
-      border-color: rgba($brand-primary, 0.5);
-      background-color: rgba($brand-primary, 0.02);
+      border-color: rgba(var(--v-theme-primary), 0.5);
+      background-color: rgba(var(--v-theme-primary), 0.02);
       
       .v-icon.upload-icon {
-          color: $brand-primary;
+          color: rgb(var(--v-theme-primary));
       }
     }
   }

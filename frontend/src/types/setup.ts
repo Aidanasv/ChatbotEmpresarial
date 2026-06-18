@@ -26,6 +26,7 @@ export interface AppearanceSetup {
     primaryColor: string;
     showChatbotAvatar: boolean;
     widgetPosition: boolean;
+    title:string;
 }
 
 export interface KnowledgeSetup {

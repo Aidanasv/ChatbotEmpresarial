@@ -1,5 +1,12 @@
 namespace backend.DTOs
 {
+    public class AnalyticsSuperAdminDTO
+    {
+        public int TotalCompanies { get; set; }
+        public int TotalUsers { get; set; }
+        public int TotalConversations { get; set; }
+        public double MRR { get; set; }
+    }
     public class AnalyticsDTO
     {
         public int TotalConversations { get; set; }
@@ -16,6 +23,38 @@ namespace backend.DTOs
         public string LastMessageTime { get; set; } = string.Empty;
         public string LastMessage { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+    }
 
+    public class CompanyAnalyticsDTO
+    {
+        public int CompanyId { get; set; }
+        public string Initials { get; set; } = string.Empty;
+        public string CompanyName { get; set; } = string.Empty;
+        public string CompanyEmail { get; set; } = string.Empty;
+        public string CompanySubscription { get; set; } = string.Empty;
+        public int Users { get; set; }
+        public int Conversations { get; set; }
+        public double MRR { get; set; } = 0.0;
+        public string Status { get; set; } = string.Empty;
+        public string CreatedAt { get; set; } = string.Empty;
+    }
+
+    public class CompaniesQueryDTO
+    {
+        public string? Search { get; set; }
+        public string? Status { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 10;
+    }
+
+    public class CompanyAnalyticsPagedResponseDTO
+    {
+        public List<CompanyAnalyticsDTO> Items { get; set; } = new();
+        public int Total { get; set; }
+        public int Page { get; set; }
+        public int PageSize { get; set; }
+        public int ActiveCount { get; set; }
+        public int InReviewCount { get; set; }
+        public int InactiveCount { get; set; }
     }
 }

@@ -2,10 +2,25 @@
 
 .app-navbar {
   border-bottom: 1px solid rgba(var(--v-border-color), 0.08) !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(8px);
+
+  .navbar-brand {
+    min-width: 0;
+  }
+
+  .navbar-header-logo {
+    min-width: 0;
+  }
 
   .navbar-logo-text {
-    color: $brand-primary;
+    color: rgba(var(--v-theme-on-surface), 0.92);
     letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  .navbar-brand-subtitle {
+    line-height: 1.1;
   }
 
   .navbar-link {
@@ -14,8 +29,18 @@
     transition: $transition-base;
     
     &:hover {
-      color: $brand-primary;
+      color: rgba(var(--v-theme-primary), 0.92);
       background-color: rgba(var(--v-theme-primary), 0.05);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .navbar-logo-text {
+      font-size: 1rem;
+    }
+
+    .navbar-brand-subtitle {
+      display: none;
     }
   }
 }

@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import type { CompanySetup, PersonalitySetup, AppearanceSetup, SetUpState, CompanySetupResponse, KnowledgeSetup } from '@/types/setup'
 import axios from 'axios'
+import { useUiStore } from './useUiStore'
+import { hasSubscriptionFeature } from '@/utils/subscriptionPermissions'
 
 export const useSetupStore = defineStore('setup', {
     state: (): SetUpState => ({
@@ -24,7 +26,8 @@ export const useSetupStore = defineStore('setup', {
         appearanceSetup: {
             primaryColor: '',
             showChatbotAvatar: false,
-            widgetPosition: true
+            widgetPosition: true,
+            title: ''
         },
         knowledgeSetup: {
             documents: [],
@@ -42,8 +45,14 @@ export const useSetupStore = defineStore('setup', {
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.companySetup = response.data;
+                useUiStore().showSuccess("Configuración de la empresa guardada correctamente.", "Éxito", 3000);
             } catch (error) {
                 console.error('Error saving company setup:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al guardar la configuración de la empresa. Por favor, inténtalo de nuevo.',
+                    "Error al guardar",
+                    3000
+                );
                 throw error;
             }
         },
@@ -59,10 +68,16 @@ export const useSetupStore = defineStore('setup', {
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.isLoading = false;
+                useUiStore().showSuccess("Configuración de personalidad guardada correctamente.", "Éxito", 3000);
                 return response.data;
             } catch (error) {
                 this.isLoading = false;
                 console.error('Error saving personality setup:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al guardar la personalidad del chatbot. Por favor, inténtalo de nuevo.',
+                    "Error al guardar",
+                    3000
+                );
                 throw error;
             }
         },
@@ -78,21 +93,30 @@ export const useSetupStore = defineStore('setup', {
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
                 this.isLoading = false;
+                useUiStore().showSuccess("Configuración de apariencia guardada correctamente.", "Éxito", 3000);
                 return response.data;
             } catch (error) {
                 this.isLoading = false;
                 console.error('Error saving appearance setup:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al guardar la apariencia. Por favor, inténtalo de nuevo.',
+                    "Error al guardar",
+                    3000
+                );
                 throw error;
             }
         },
 
-        async saveKnowledgeSetup(knowledgeSetup: KnowledgeSetup, files: File[] = []) {
+        async saveKnowledgeSetup(knowledgeSetup: KnowledgeSetup, files: File[] = [], documentsToDelete: string[] = []) {
             try {
                 this.isLoading = true;
+
+                // Guardar FAQs
                 const response = await axios.post('http://localhost:5267/api/setup/faqs', knowledgeSetup.faqs,
                     { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
                 );
 
+                // Subir nuevos documentos si existen
                 if (files.length > 0) {
                     const formData = new FormData();
                     files.forEach(file => formData.append('files', file));
@@ -102,11 +126,22 @@ export const useSetupStore = defineStore('setup', {
                     );
                 }
 
+                // Borrar documentos marcados para eliminar
+                if (documentsToDelete.length > 0) {
+                    await this.deleteDocuments(documentsToDelete);
+                }
+
                 this.isLoading = false;
+                useUiStore().showSuccess("Configuración de conocimiento guardada correctamente.", "Éxito", 3000);
                 return response.data;
             } catch (error) {
                 this.isLoading = false;
                 console.error('Error saving knowledge setup:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al guardar la base de conocimiento. Por favor, inténtalo de nuevo.',
+                    "Error al guardar",
+                    3000
+                );
                 throw error;
             }
         },
@@ -124,6 +159,11 @@ export const useSetupStore = defineStore('setup', {
             } catch (error) {
                 this.isLoading = false;
                 console.error('Error saving initial setup:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al guardar la configuración inicial. Por favor, inténtalo de nuevo.',
+                    "Error de configuración",
+                    3000
+                );
                 throw error;
             }
         },
@@ -143,6 +183,133 @@ export const useSetupStore = defineStore('setup', {
             } catch (error) {
                 this.isLoading = false;
                 console.error('Error fetching setup data:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al obtener los datos de configuración. Por favor, inténtalo de nuevo.',
+                    "Error de carga",
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async getCurrentSubscription() {
+            try {
+                const response = await axios.get<{ subscriptionId: number }>('http://localhost:5267/api/setup/company/subscription', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.subscriptionId;
+            } catch (error) {
+                console.error('Error fetching current subscription:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al cargar tu suscripción actual. Por favor, inténtalo de nuevo.',
+                    "Error al cargar",
+                    3000
+                );  
+                throw error;
+            }
+        },
+
+        async getCurrentSubscriptionLimits() {
+            try {
+                const response = await axios.get<{ subscriptionId: number; maxUsers: number }>('http://localhost:5267/api/setup/company/subscription', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data;
+            } catch (error) {
+                console.error('Error fetching current subscription limits:', error);
+                useUiStore().showError(
+                    'Ocurrio un error al cargar los limites de tu suscripcion. Por favor, intentalo de nuevo.',
+                    'Error al cargar',
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async getCurrentSubscriptionFeatures(companyId?: number) {
+            try {
+                const response = await axios.get<{ companyId: number, features: string[] }>('http://localhost:5267/api/setup/company/subscription/features', {
+                    params: companyId ? { companyId } : undefined,
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.features ?? [];
+            } catch (error) {
+                console.error('Error fetching current subscription features:', error);
+                useUiStore().showError(
+                    'Ocurrio un error al cargar las caracteristicas de tu suscripcion. Por favor, intentalo de nuevo.',
+                    'Error al cargar',
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async canUseCurrentSubscriptionFeature(requiredFeature: string, companyId?: number) {
+            const features = await this.getCurrentSubscriptionFeatures(companyId);
+            return hasSubscriptionFeature(features, requiredFeature);
+        },
+
+        async updateCompanySubscription(subscriptionId: number) {
+            try {
+                const response = await axios.patch<{ subscriptionId: number }>(`http://localhost:5267/api/setup/company/subscription/${subscriptionId}`, null, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                });
+
+                return response.data.subscriptionId;
+            } catch (error) {
+                console.error('Error updating company subscription:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al actualizar la suscripción de la empresa. Por favor, inténtalo de nuevo.',
+                    "Error al actualizar",
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async deleteDocuments(documentSourceIds: string[]) {
+            try {
+                const response = await axios.delete('http://localhost:5267/api/documentSources/files',
+                    {
+                        data: { documentSourceIds },
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    }
+                );
+                return response.data;
+            } catch (error) {
+                console.error('Error deleting documents:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al eliminar los documentos seleccionados. Por favor, inténtalo de nuevo.',
+                    "Error al eliminar",
+                    3000
+                );
+                throw error;
+            }
+        },
+
+        async getCorpusRebuildStatus() {
+            try {
+                const response = await axios.get('http://localhost:5267/api/documentSources/rebuild-status',
+                    { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+                );
+
+                return response.data as {
+                    status: 'idle' | 'running' | 'succeeded' | 'failed',
+                    startedAtUtc?: string,
+                    finishedAtUtc?: string,
+                    message?: string,
+                    corpusName?: string
+                };
+            } catch (error) {
+                console.error('Error fetching corpus rebuild status:', error);
+                useUiStore().showError(
+                    'Ocurrió un error al consultar el estado de indexación de los documentos. Por favor, inténtalo de nuevo.',
+                    "Error de estado",
+                    3000
+                );
                 throw error;
             }
         }

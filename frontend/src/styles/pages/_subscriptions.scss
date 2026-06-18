@@ -1,0 +1,27 @@
+@use '../base/variables' as *;
+
+.subscriptions-page {
+
+  .subscription-card,
+  .subscription-revenue-card {
+    border: 1px solid $border-color;
+    background-color: rgb(var(--v-theme-surface));
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  }
+
+  .subscription-card {
+    position: relative;
+  }
+
+  .subscription-revenue-row {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  }
+
+  .subscription-revenue-row:last-of-type {
+    border-bottom: none;
+  }
+
+  .subscription-revenue-total {
+    border-top: 1px solid rgba(15, 23, 42, 0.08);
+  }
+}

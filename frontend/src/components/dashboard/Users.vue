@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="pa-6 pa-md-8 bg-grey-lighten-5 h-100">
+  <v-container fluid class="pa-6 pa-md-8 bg-grey-lighten-5 h-100 users-container">
 
     <div class="d-flex flex-column flex-md-row justify-space-between align-md-center mb-8">
       <div>
@@ -8,14 +8,29 @@
       </div>
 
       <div class="mt-4 mt-md-0 d-flex gap-3">
-        <v-btn color="primary" prepend-icon="mdi-plus" class="text-none font-weight-bold" elevation="0"
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          class="text-none font-weight-bold"
+          elevation="0"
+          :disabled="!canCreateUser"
           @click="openCreateModal">
           Añadir Usuario
         </v-btn>
       </div>
     </div>
 
-    <v-card class="rounded-xl border" elevation="0">
+    <v-alert v-if="maxUsers !== null" :type="canCreateUser ? 'info' : 'warning'" variant="tonal" class="mb-6">
+      <span v-if="canCreateUser">
+        Tu plan permite {{ maxUsers }} usuarios y actualmente tienes {{ total }}.
+        Te quedan {{ remainingUserSlots }} cupos.
+      </span>
+      <span v-else>
+        Has alcanzado el máximo de {{ maxUsers }} usuarios permitido por tu plan.
+      </span>
+    </v-alert>
+
+    <v-card class="rounded-xl border dash-card" elevation="0">
 
       <div class="pa-5 border-b d-flex flex-column flex-sm-row gap-4 align-sm-center justify-space-between bg-white">
         <v-text-field v-model="search" density="compact" variant="outlined" prepend-inner-icon="mdi-magnify"
@@ -24,9 +39,8 @@
 
         <div class="d-flex gap-3">
           <v-select v-model="roleFilter" :items="['Todos', 'Administrador', 'Agente', 'Lector']" density="compact"
-            variant="outlined" hide-details bg-color="grey-lighten-4" style="width: 160px;"></v-select>
-          <v-btn variant="outlined" color="grey-darken-1" icon="mdi-filter-variant" size="small"
-            class="h-auto px-2"></v-btn>
+            variant="outlined" hide-details bg-color="grey-lighten-4" class="users-role-filter"></v-select>
+
         </div>
       </div>
 
@@ -40,7 +54,7 @@
         <p class="text-body-2 text-medium-emphasis">No se encontraron usuarios que coincidan con la búsqueda.</p>
       </div>
 
-      <v-table v-else class="bg-white">
+      <v-table v-else class="bg-white users-table">
         <thead>
           <tr>
             <th class="text-left font-weight-bold text-uppercase text-caption text-medium-emphasis">Usuario</th>
@@ -52,7 +66,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in filteredUsers" :key="user.id" class="v-card--link">
+          <tr v-for="user in filteredUsers" :key="user.id" class="v-card--link user-row">
             <td class="py-3">
               <div class="d-flex align-center">
                 <v-avatar :color="getAvatarColor(user.role)" variant="tonal" size="40" class="mr-4 font-weight-bold">
@@ -93,17 +107,18 @@
 
       <div class="pa-4 border-t d-flex justify-space-between align-center bg-white">
         <span class="text-caption text-medium-emphasis">
-          Mostrando {{ filteredUsers.length }} de {{ userList.length }} usuarios
+          Mostrando {{ filteredUsers.length }} de {{ total }} usuarios
         </span>
         <div class="d-flex gap-2">
-          <v-btn variant="outlined" size="small" class="text-none" disabled>Anterior</v-btn>
-          <v-btn variant="outlined" size="small" class="text-none" disabled>Siguiente</v-btn>
+          <v-btn variant="outlined" size="small" class="text-none" :disabled="currentPage <= 1"
+            @click="currentPage--">Anterior</v-btn>
+          <v-btn variant="outlined" size="small" class="text-none" :disabled="currentPage >= totalPages"
+            @click="currentPage++">Siguiente</v-btn>
+          <v-chip size="small" variant="tonal">Página {{ currentPage }} / {{ totalPages }}</v-chip>
         </div>
       </div>
 
     </v-card>
-
-    <CreateUserModal v-model="isCreateModalOpen" :userToEdit="selectedUser" @save="handleSaveUser" />
 
     <CreateUserModal v-model="isCreateModalOpen" :userToEdit="selectedUser" @save="handleSaveUser" />
 
@@ -113,48 +128,78 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/useUserStore'
+import { useSetupStore } from '@/stores/useSetupStore'
+import type { User } from '@/types/User'
 
 import CreateUserModal from '@/components/setup/UserForm.vue'
 import ConfirmModal from '@/components/utils/ConfirmModal.vue'
 
 const userStore = useUserStore()
-const { userList } = storeToRefs(userStore)
+const setupStore = useSetupStore()
+const { userList, total } = storeToRefs(userStore)
 
 const isLoading = ref(true)
 const search = ref('')
 const roleFilter = ref('Todos')
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 const isCreateModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
 const userToDeleteId = ref<number | null>(null)
 const isDeleting = ref(false)
+const maxUsers = ref<number | null>(null)
 
-const selectedUser = ref<any>(null)
+const selectedUser = ref<Record<string, any> | undefined>(undefined)
+let searchDebounce: ReturnType<typeof setTimeout> | null = null
 
-const filteredUsers = computed(() => {
-  if (!userList.value) return []
+const filteredUsers = computed(() => userList.value)
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+const remainingUserSlots = computed(() => {
+  if (maxUsers.value === null) {
+    return 0
+  }
 
-  return userList.value.filter(user => {
-    const name = user.userName || ''
-    const email = user.email || ''
-
-    const matchesSearch = name.toLowerCase().includes(search.value.toLowerCase()) ||
-      email.toLowerCase().includes(search.value.toLowerCase())
-    const matchesRole = roleFilter.value === 'Todos' || user.role === roleFilter.value
-
-    return matchesSearch && matchesRole
-  })
+  return Math.max(maxUsers.value - total.value, 0)
 })
+const canCreateUser = computed(() => maxUsers.value !== null && total.value < maxUsers.value)
+
+const normalizeRoleFilter = (value: string) => {
+  switch (value) {
+    case 'Administrador': return 'Admin'
+    case 'Agente': return 'User'
+    case 'Lector': return 'User'
+    default: return ''
+  }
+}
+
+const fetchUsers = async () => {
+  try {
+    isLoading.value = true
+    await userStore.getUsers({
+      search: search.value,
+      role: normalizeRoleFilter(roleFilter.value),
+      page: currentPage.value,
+      pageSize: pageSize.value
+    })
+  } finally {
+    isLoading.value = false
+  }
+}
 
 const openCreateModal = () => {
-  selectedUser.value = null
+  if (!canCreateUser.value) {
+    return
+  }
+
+  selectedUser.value = undefined
   isCreateModalOpen.value = true
 }
 
-const openEditModal = (user: any) => {
+const openEditModal = (user: User) => {
   selectedUser.value = { ...user }
   isCreateModalOpen.value = true
 }
@@ -168,6 +213,8 @@ const handleSaveUser = async (payload: { isEdit: boolean, data: any }) => {
     } else {
       await userStore.createUser(payload.data)
     }
+
+    await fetchUsers()
 
   } catch (error) {
     console.error("Fallo al guardar el usuario", error)
@@ -186,6 +233,7 @@ const executeDelete = async () => {
 
   try {
     await userStore.deleteUser(userToDeleteId.value)
+    await fetchUsers()
   } catch (error) {
     console.error("Fallo al borrar el usuario", error)
   } finally {
@@ -226,12 +274,32 @@ const formatDate = (dateString: Date | string) => {
 
 onMounted(async () => {
   try {
-    isLoading.value = true
-    await userStore.getUsers()
+    const subscriptionLimits = await setupStore.getCurrentSubscriptionLimits()
+    maxUsers.value = subscriptionLimits.maxUsers
+
+    await fetchUsers()
   } catch (error) {
     console.error('Error al cargar la vista de usuarios:', error)
-  } finally {
-    isLoading.value = false
   }
+})
+
+watch(roleFilter, async () => {
+  currentPage.value = 1
+  await fetchUsers()
+})
+
+watch(currentPage, async () => {
+  await fetchUsers()
+})
+
+watch(search, () => {
+  if (searchDebounce) {
+    clearTimeout(searchDebounce)
+  }
+
+  searchDebounce = setTimeout(async () => {
+    currentPage.value = 1
+    await fetchUsers()
+  }, 350)
 })
 </script>

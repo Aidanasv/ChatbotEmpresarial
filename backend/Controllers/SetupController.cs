@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using backend.Data;
 using backend.DTOs;
 using backend.Models;
+using backend.Services;
+using backend.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,16 +16,33 @@ namespace backend.Controllers
     public class SetupController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ISubscriptionPermissionService _subscriptionPermissionService;
 
-        public SetupController(AppDbContext context)
+        public SetupController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService)
         {
             _context = context;
+            _subscriptionPermissionService = subscriptionPermissionService;
         }
 
-        [Authorize(Roles = nameof(Role.Admin))]
+        [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SuperAdmin))]
         [HttpGet("setup/{companyId}")]
         public async Task<IActionResult> GetSetupData(int companyId)
         {
+            var isSuperAdmin = User.IsInRole(nameof(Role.SuperAdmin));
+            if (!isSuperAdmin)
+            {
+                var companyIdFromToken = GetCompanyIdFromToken();
+                if (companyIdFromToken == null)
+                {
+                    return Unauthorized("Empresa no encontrada en el token.");
+                }
+
+                if (companyIdFromToken != companyId)
+                {
+                    return Forbid("El usuario no tiene permiso para ver esta empresa.");
+                }
+            }
+
             var company = await _context.Companies
                 .Include(c => c.ChatbotSettings)
                 .Include(c => c.Faqs)
@@ -70,7 +89,13 @@ namespace backend.Controllers
                         Name = d.Name,
                         CreatedAt = d.CreatedAt
                     }).ToList()
-                }
+                },
+                AppearanceSetup = company.ChatbotSettings != null ? new AppearanceSetupDto
+                {
+                    PrimaryColor = company.ChatbotSettings.PrimaryColor,
+                    ShowChatbotAvatar = company.ChatbotSettings.ShowAvatar,
+                    WidgetPosition = company.ChatbotSettings.WidgetPosition
+                } : new AppearanceSetupDto()
             };
 
             return Ok(setupResponse);
@@ -136,7 +161,6 @@ namespace backend.Controllers
             }
         }
 
-        // Endpoint para actualizar solo los datos de la empresa
         [Authorize(Roles = nameof(Role.Admin))]
         [HttpPost("company")]
         public async Task<IActionResult> SaveCompanySetup(CompanySetupDto companySetup)
@@ -162,7 +186,9 @@ namespace backend.Controllers
                 return Forbid("El usuario no tiene permiso para editar esta empresa.");
             }
 
-            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            var company = await _context.Companies
+                .Include(c => c.Subscription)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
 
             if (company == null)
             {
@@ -202,6 +228,110 @@ namespace backend.Controllers
             {
                 return StatusCode(500, $"Error al guardar los datos de la empresa: {ex.Message}");
             }
+        }
+
+        [Authorize(Roles = nameof(Role.Admin))]
+        [HttpGet("company/subscription")]
+        public async Task<IActionResult> GetCompanySubscription()
+        {
+            var companyId = GetCompanyIdFromToken();
+            if (companyId == null)
+            {
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+
+            var company = await _context.Companies
+                .Include(c => c.Subscription)
+                .FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            return Ok(new
+            {
+                subscriptionId = company.SubscriptionId,
+                maxUsers = company.Subscription?.MaxUsers ?? 0
+            });
+        }
+
+        [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SuperAdmin))]
+        [HttpGet("company/subscription/features")]
+        public async Task<IActionResult> GetCompanySubscriptionFeatures([FromQuery] int? companyId = null)
+        {
+            int? targetCompanyId;
+
+            if (User.IsInRole(nameof(Role.SuperAdmin)))
+            {
+                targetCompanyId = companyId;
+            }
+            else
+            {
+                targetCompanyId = GetCompanyIdFromToken();
+            }
+
+            if (targetCompanyId == null)
+            {
+                return BadRequest("Debes indicar una empresa valida.");
+            }
+
+            var companyExists = await _context.Companies.AnyAsync(c => c.Id == targetCompanyId.Value);
+            if (!companyExists)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            var features = await _subscriptionPermissionService.GetCompanyFeaturesAsync(targetCompanyId.Value);
+
+            return Ok(new
+            {
+                companyId = targetCompanyId.Value,
+                features
+            });
+        }
+
+        [Authorize(Roles = nameof(Role.Admin))]
+        [HttpPatch("company/subscription/{subscriptionId}")]
+        public async Task<IActionResult> UpdateCompanySubscription(int subscriptionId)
+        {
+            var userId = GetUserIdFromToken();
+            var companyId = GetCompanyIdFromToken();
+            if (userId == null)
+            {
+                return Unauthorized("Usuario no autenticado.");
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                return Unauthorized("Usuario no encontrado.");
+            }
+            else if (companyId == null || user.CompanyId == null)
+            {
+                return Forbid("El usuario no tiene una empresa asignada.");
+            }
+            else if (companyId != null && user.CompanyId != companyId)
+            {
+                return Forbid("El usuario no tiene permiso para editar esta empresa.");
+            }
+
+            var subscription = await _context.Subscriptions.FirstOrDefaultAsync(s => s.Id == subscriptionId);
+            if (subscription == null)
+            {
+                return NotFound("Plan no encontrado.");
+            }
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            company.SubscriptionId = subscriptionId;
+            _context.Companies.Update(company);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { subscriptionId = company.SubscriptionId, message = "Plan actualizado correctamente." });
         }
 
         [Authorize(Roles = nameof(Role.Admin))]
@@ -281,6 +411,15 @@ namespace backend.Controllers
                 return NotFound("Empresa no encontrada.");
             }
 
+            var canCustomizeAppearance = await _subscriptionPermissionService.CompanyHasFeatureAsync(
+                company.Id,
+                SubscriptionFeatureCatalog.ColorAndAvatarCustomization);
+
+            if (!canCustomizeAppearance)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "Tu plan no permite cambiar la apariencia del widget.");
+            }
+
             var chatbotSettings = company.ChatbotSettings;
             chatbotSettings.PrimaryColor = appearanceSetup.PrimaryColor;
             chatbotSettings.ShowAvatar = appearanceSetup.ShowChatbotAvatar;
@@ -324,10 +463,8 @@ namespace backend.Controllers
                 return NotFound("Empresa no encontrada.");
             }
 
-            // Eliminar las FAQs existentes
             _context.Faqs.RemoveRange(company.Faqs);
 
-            // Agregar las nuevas FAQs
             foreach (var faqDto in knowledgeSetup)
             {
                 var faq = new Faq
@@ -343,6 +480,33 @@ namespace backend.Controllers
 
             await _context.SaveChangesAsync();
             return Ok(knowledgeSetup);
+        }
+
+        [Authorize(Roles = nameof(Role.SuperAdmin))]
+        [HttpPatch("company/{companyId}/status")]
+        public async Task<IActionResult> UpdateCompanyStatus(int companyId, UpdateCompanyStatusDto updateStatus)
+        {
+            if (string.IsNullOrWhiteSpace(updateStatus.Status))
+            {
+                return BadRequest("El estado es obligatorio.");
+            }
+
+            if (!Enum.TryParse<CompanyStatus>(updateStatus.Status, true, out var nextStatus))
+            {
+                return BadRequest("Estado de empresa no valido.");
+            }
+
+            var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == companyId);
+            if (company == null)
+            {
+                return NotFound("Empresa no encontrada.");
+            }
+
+            company.Status = nextStatus;
+            _context.Companies.Update(company);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { companyId = company.Id, status = company.Status.ToString() });
         }
 
         private int? GetUserIdFromToken()

@@ -13,4 +13,19 @@ export interface UserState {
     limit: number;
     offset: number;
     userList: User[];
+    total: number;
+}
+
+export interface UsersQuery {
+    search?: string;
+    role?: string;
+    page?: number;
+    pageSize?: number;
+}
+
+export interface UsersPagedResponse {
+    items: User[];
+    total: number;
+    page: number;
+    pageSize: number;
 }
