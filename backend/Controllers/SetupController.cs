@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace backend.Controllers
 {
@@ -17,11 +21,13 @@ namespace backend.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ISubscriptionPermissionService _subscriptionPermissionService;
+        private readonly IConfiguration _configuration;
 
-        public SetupController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService)
+        public SetupController(AppDbContext context, ISubscriptionPermissionService subscriptionPermissionService, IConfiguration configuration)
         {
             _context = context;
             _subscriptionPermissionService = subscriptionPermissionService;
+            _configuration = configuration;
         }
 
         [Authorize(Roles = nameof(Role.Admin) + "," + nameof(Role.SuperAdmin))]
@@ -117,7 +123,46 @@ namespace backend.Controllers
                 return Unauthorized("Usuario no encontrado.");
             }
 
-            var subscription = await _context.Subscriptions.ToListAsync();
+            if (user.CompanyId != null)
+            {
+                var existingCompany = await _context.Companies
+                    .Include(c => c.ChatbotSettings)
+                    .FirstOrDefaultAsync(c => c.Id == user.CompanyId.Value);
+
+                if (existingCompany == null)
+                {
+                    return NotFound("La empresa del usuario no existe.");
+                }
+
+                using var existingTransaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    MapSetupData(existingCompany, setupData);
+                    _context.Companies.Update(existingCompany);
+                    await _context.SaveChangesAsync();
+                    await existingTransaction.CommitAsync();
+
+                    var refreshedExistingUser = await _context.Users
+                        .Include(u => u.Company)
+                        .ThenInclude(c => c!.ChatbotSettings)
+                        .FirstAsync(u => u.Id == user.Id);
+
+                    var refreshedExistingToken = CreateToken(refreshedExistingUser);
+                    return Ok(new
+                    {
+                        message = "Configuración inicial actualizada correctamente.",
+                        token = refreshedExistingToken,
+                        companyId = refreshedExistingUser.CompanyId
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await existingTransaction.RollbackAsync();
+                    return StatusCode(500, $"Error al guardar la configuración inicial: {ex.Message}");
+                }
+            };
+
+            var subscription = await _context.Subscriptions.FirstOrDefaultAsync();
             var company = new Company
             {
                 Name = setupData.CompanySetup.CompanyName,
@@ -127,7 +172,7 @@ namespace backend.Controllers
                 Sector = setupData.CompanySetup.Sector,
                 Website = setupData.CompanySetup.Website,
                 Description = setupData.CompanySetup.Description,
-                SubscriptionId = subscription.FirstOrDefault()?.Id ?? 0,
+                SubscriptionId = subscription?.Id ?? 0,
                 ChatbotSettings = new ChatbotSettings
                 {
                     ChatbotName = setupData.PersonalitySetup.ChatbotName,
@@ -152,7 +197,19 @@ namespace backend.Controllers
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return Ok(new { message = "Configuración inicial guardada correctamente." });
+                var refreshedUser = await _context.Users
+                    .Include(u => u.Company)
+                    .ThenInclude(c => c!.ChatbotSettings)
+                    .FirstAsync(u => u.Id == user.Id);
+
+                var token = CreateToken(refreshedUser);
+
+                return Ok(new
+                {
+                    message = "Configuración inicial guardada correctamente.",
+                    token,
+                    companyId = refreshedUser.CompanyId
+                });
             }
             catch (Exception ex)
             {
@@ -527,6 +584,54 @@ namespace backend.Controllers
                 return companyId;
             }
             return null;
+        }
+
+        private void MapSetupData(Company company, SetupResponseDto setupData)
+        {
+            company.Name = setupData.CompanySetup.CompanyName;
+            company.LegalName = setupData.CompanySetup.LegalName;
+            company.CIF = setupData.CompanySetup.Cif;
+            company.Email = setupData.CompanySetup.Email;
+            company.Sector = setupData.CompanySetup.Sector;
+            company.Website = setupData.CompanySetup.Website;
+            company.Description = setupData.CompanySetup.Description;
+
+            if (company.ChatbotSettings == null)
+            {
+                company.ChatbotSettings = new ChatbotSettings();
+            }
+
+            company.ChatbotSettings.ChatbotName = setupData.PersonalitySetup.ChatbotName;
+            company.ChatbotSettings.ChatbotTone = setupData.PersonalitySetup.ChatbotTone;
+            company.ChatbotSettings.GreetingMessage = setupData.PersonalitySetup.GreetingMessage;
+            company.ChatbotSettings.FallbackMessage = setupData.PersonalitySetup.FallbackMessage;
+            company.ChatbotSettings.PrimaryColor = setupData.AppearanceSetup.PrimaryColor;
+            company.ChatbotSettings.ShowAvatar = setupData.AppearanceSetup.ShowChatbotAvatar;
+            company.ChatbotSettings.WidgetPosition = setupData.AppearanceSetup.WidgetPosition;
+        }
+
+        private string CreateToken(User userToken)
+        {
+            var key = Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]!);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Issuer = _configuration["JWT:ValidIssuer"],
+                Audience = _configuration["JWT:ValidAudience"],
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("userId", userToken.Id.ToString()),
+                    new Claim(ClaimTypes.Role, userToken.Role.ToString()),
+                    new Claim(ClaimTypes.Email, userToken.Email),
+                    new Claim("companyId", userToken.CompanyId?.ToString() ?? string.Empty),
+                    new Claim("chatbotId", userToken.Company?.ChatbotSettings?.Id.ToString() ?? string.Empty)
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }
