@@ -61,10 +61,12 @@ import PersonalityForm from '@/components/setup/PersonalityForm.vue'
 import AppearanceForm from '@/components/setup/AppearanceForm.vue'
 import type { SetUpState } from '@/types/setup'
 import { useSetupStore } from '@/stores/useSetupStore'
+import { useAuthStore } from '@/stores/useAuthStore'
 import { useRouter } from 'vue-router'
 
 
 const setupStore = useSetupStore()
+const authStore = useAuthStore()
 const step = ref(setupStore.step || 1)
 const router = useRouter()
 
@@ -89,8 +91,13 @@ const handleNext = async () => {
     await setupStore.setPersonalitySetup(chatbotData.value.personalitySetup)
   } else {
     await setupStore.setAppearanceSetup(chatbotData.value.appearanceSetup)
-    await setupStore.saveInitialSetup()
-    router.push({ path: '/dashboard' })
+    const response = await setupStore.saveInitialSetup()
+
+    if (response?.token) {
+      await authStore.processingToken(response.token)
+    }
+
+    await router.push({ name: 'dashboard-panel' })
   }
 
   if (step.value < 3) {
