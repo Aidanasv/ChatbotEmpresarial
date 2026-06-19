@@ -7,6 +7,6 @@ namespace backend.Models
         public decimal Price { get; set; }
         public int MaxUsers { get; set; }
         public string Features { get; set; } = string.Empty;
-        public Company Company { get; set; } = null!;
+        public ICollection<Company> Companies { get; set; } = new List<Company>();
     }
 }
