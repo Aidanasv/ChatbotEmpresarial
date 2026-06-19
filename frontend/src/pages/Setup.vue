@@ -61,10 +61,12 @@ import PersonalityForm from '@/components/setup/PersonalityForm.vue'
 import AppearanceForm from '@/components/setup/AppearanceForm.vue'
 import type { SetUpState } from '@/types/setup'
 import { useSetupStore } from '@/stores/useSetupStore'
+import { useRouter } from 'vue-router'
+
 
 const setupStore = useSetupStore()
 const step = ref(setupStore.step || 1)
-
+const router = useRouter()
 
 const stepsList = [
   { text: 'Empresa', icon: 'mdi-domain' },
@@ -88,6 +90,7 @@ const handleNext = async () => {
   } else {
     await setupStore.setAppearanceSetup(chatbotData.value.appearanceSetup)
     await setupStore.saveInitialSetup()
+    router.push({ path: '/dashboard' })
   }
 
   if (step.value < 3) {
